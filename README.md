@@ -127,6 +127,56 @@ back from Mongo (bounded by `ROUND_RESUME_MAX_AGE_MS`), and the game always
 resumes **paused** — the host lost the room for however long the restart took, so
 one deliberate click beats silently resuming into a half-empty room.
 
+## Deploying to Render
+
+This deploys as **one** web service. `npm run build` compiles the client into
+`client/dist`, and Express serves it from the same process — so the page and the
+socket share an origin, there is no CORS to configure, and there is no second
+service to pay for.
+
+**Dashboard → New → Web Service → connect this repo, then:**
+
+| Field | Value |
+| --- | --- |
+| Runtime | Node |
+| Build Command | `npm run build` |
+| Start Command | `npm start` |
+| Health Check Path | `/health` |
+
+**Environment variables** (Environment tab):
+
+```
+NODE_ENV            production
+DATABASE            mongodb+srv://<user>:<PASSWORD>@<cluster>.mongodb.net/bingo?retryWrites=true&w=majority
+DATABASE_PASSWORD   <your Atlas password>
+ADMIN_KEY           <a long random string — NOT dev-admin-key>
+STRICT_MARKS        true
+STOP_ON_WIN         true
+```
+
+Keep the literal `<PASSWORD>` token inside `DATABASE`; the server substitutes it
+at boot. Do **not** set `PORT` — Render provides it. Do **not** set
+`CLIENT_ORIGIN`: the client is served from this same service and `config.js`
+already trusts Render's `RENDER_EXTERNAL_URL`. (On a custom domain, set
+`CLIENT_ORIGIN` to that domain — the server warns at boot if it is missing.)
+
+**In MongoDB Atlas**, add `0.0.0.0/0` to Network Access. Render's free tier has
+no static outbound IP, so an IP allowlist cannot work there.
+
+Alternatively the repo ships a [`render.yaml`](render.yaml) blueprint — **New →
+Blueprint** picks up everything above and prompts only for the two secrets.
+
+### After it goes live
+
+- Players: `https://<your-service>.onrender.com`
+- Host: `https://<your-service>.onrender.com/?admin=<ADMIN_KEY>`
+
+**Free-tier caveat:** the instance sleeps after ~15 minutes idle and takes
+~30–60 s to wake. In-memory game state does not survive that, but the round does
+— cards, marks and asked questions are restored from Mongo and resume paused.
+Open the page yourself a minute before the players arrive, or use a paid instance
+for a real event.
+
 ## Before deploying publicly
 
 - Set a real `ADMIN_KEY`; the `?admin=` URL parameter is dev-grade and should
