@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#070A14" />
+    <title>Bingo Live</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!--
+      Outfit has no Hebrew glyphs, so Hebrew text falls through per-glyph to Heebo.
+      Both are geometric sans faces, so the two scripts sit together without a
+      visible seam. Order in the CSS stack matters: Outfit first for Latin.
+    -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Heebo:wght@400;500;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script>
+      // Runs BEFORE first paint, unlike main.jsx which is a deferred module — an
+      // RTL session must never flash left-to-right first. The resolved value is
+      // published so the React provider initialises from the identical answer
+      // instead of re-deriving it and risking drift.
+      (() => {
+        const lang =
+          localStorage.getItem('bingo:lang') ||
+          (navigator.language && navigator.language.startsWith('he') ? 'he' : 'en');
+        window.__BINGO_LANG__ = lang;
+        document.documentElement.lang = lang;
+        document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

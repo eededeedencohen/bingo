@@ -1,0 +1,86 @@
+/* Tailwind v4: one import, config lives in CSS via @theme. */
+@import 'tailwindcss';
+
+@theme {
+  /* Outfit covers Latin; Hebrew glyphs fall through to Heebo automatically. */
+  --font-display: 'Outfit', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink-900: #070a14;
+  --color-ink-800: #0b1020;
+  --color-ink-700: #121a30;
+
+  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-shimmer: shimmer 2.6s linear infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.55;
+  }
+  70%,
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-ink-900 font-display text-slate-100 antialiased;
+    /* Two soft light sources + a faint grid: depth without a single image asset. */
+    background-image:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(56, 189, 248, 0.14), transparent 60%),
+      radial-gradient(50rem 35rem at 90% 0%, rgba(168, 85, 247, 0.16), transparent 55%),
+      radial-gradient(45rem 30rem at 50% 110%, rgba(236, 72, 153, 0.1), transparent 60%),
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size:
+      auto,
+      auto,
+      auto,
+      3rem 3rem,
+      3rem 3rem;
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  /* The one surface treatment used everywhere — keeps the design language tight. */
+  .glass {
+    @apply rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/40 backdrop-blur-xl;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+/* Honour the OS setting instead of forcing motion on people who get sick from it. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

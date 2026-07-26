@@ -1,0 +1,32 @@
+# Render blueprint — one web service serving both the API and the built client.
+#
+# Deploy from the dashboard: New > Blueprint, point it at this repo.
+# DATABASE and DATABASE_PASSWORD are marked sync:false, so Render prompts for
+# them instead of storing secrets in git.
+services:
+  - type: web
+    name: summer-question-bingo
+    runtime: node
+    plan: free
+    buildCommand: npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Never guessed: paste your Atlas URI (keep the literal <PASSWORD> token).
+      - key: DATABASE
+        sync: false
+      - key: DATABASE_PASSWORD
+        sync: false
+      # Gates the answer key, the roster and the audit trail. Generate a strong one.
+      - key: ADMIN_KEY
+        generateValue: true
+      - key: STOP_ON_WIN
+        value: 'true'
+      - key: STRICT_MARKS
+        value: 'true'
+      - key: FORBIDDEN_DATABASES
+        value: yitav,test,admin,local
+    # CLIENT_ORIGIN is intentionally absent: the client is served from this same
+    # service, and config.js already trusts RENDER_EXTERNAL_URL.
