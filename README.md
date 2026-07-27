@@ -57,28 +57,29 @@ the same size.
 
 ## Printed boards
 
-150 pre-generated paper cards live in `server/paper-boards.js` — 50 per size —
-for players who prefer pen and paper. Print-ready PDFs (A4, two cards per page,
-Hebrew, each carrying its board ID) are in [`print/`](print/):
+150 pre-generated paper cards — numbered **1 to 150** — for players who prefer
+pen and paper. Print-ready PDFs (A4, two cards per page, Hebrew, each sheet
+carrying its ID and size) live in [`print/`](print/) and can also be downloaded
+straight from the host panel ("Download sheets"):
 
 ```
-print/shekel-bingo-3x3.pdf   boards 301-350
-print/shekel-bingo-4x4.pdf   boards 401-450
-print/shekel-bingo-5x5.pdf   boards 501-550
+print/shekel-bingo-3x3.pdf   boards 1-50
+print/shekel-bingo-4x4.pdf   boards 51-100
+print/shekel-bingo-5x5.pdf   boards 101-150
 ```
-
-The ID's first digit is the size — board **517** is 5×5 card #17.
 
 The host types the IDs of the sheets actually handed out into "Printed boards"
-in the host panel. A paper player marks by hand, so their marks are by
-definition the questions asked so far — the roster ticks their cards off
+in the host panel. Only boards matching the round's size are accepted — a 3×3
+sheet cannot enter a 5×5 game. A paper player marks by hand, so their marks are
+by definition the questions asked so far — the roster ticks their cards off
 automatically and flags a paper board the moment it reaches bingo, so the host
 knows to check the physical sheet.
 
-⚠️ Never regenerate `server/paper-boards.js` after printing: the printed IDs
-must keep matching the stored cells, or the tracking follows the wrong cards.
-(Regenerate with `node scripts/generate-paper-boards.mjs`, re-render PDFs with
-`node scripts/make-paper-pdf.mjs` — needs `puppeteer-core` and a local Chrome.)
+**The archive is immutable.** On first boot with a database, the 150 boards and
+the three PDFs are stored in MongoDB and never overwritten; from then on the
+server prefers the archived boards over the bundled file, so no reset, redeploy
+or accidental regeneration can change what a printed ID means. (Generators live
+under `scripts/` for provenance — do not rerun them after printing.)
 
 ## The question bank
 

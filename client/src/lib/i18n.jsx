@@ -82,9 +82,12 @@ const DICTIONARY = {
     'admin.newRound': 'New round — board size',
     'admin.resetConfirm': 'Start a new {size}×{size} round? Everyone gets a fresh card.',
     'admin.paperTitle': 'Printed boards',
-    'admin.paperPlaceholder': 'Board ID (e.g. 517)',
+    'admin.paperPlaceholder': 'Board ID (1-150)',
     'admin.paperAdd': 'Track',
     'admin.paperInvalid': 'Unknown board ID — check the number printed on the sheet.',
+    'admin.paperSizeMismatch':
+      'Board {id} is {size}×{size}, but this game is {game}×{game} — it cannot play this round.',
+    'admin.paperDownload': 'Download sheets (PDF)',
     'admin.paperHint':
       'Paper players mark by hand; here their cards tick off automatically as questions are asked.',
     'admin.unauthorized': 'Wrong admin key — the server rejected it.',
@@ -181,9 +184,12 @@ const DICTIONARY = {
     'admin.newRound': 'סבב חדש — גודל הלוח',
     'admin.resetConfirm': 'להתחיל סבב חדש {size}×{size}? כולם יקבלו כרטיס חדש.',
     'admin.paperTitle': 'לוחות מודפסים',
-    'admin.paperPlaceholder': 'מזהה לוח (למשל 517)',
+    'admin.paperPlaceholder': 'מזהה לוח (1–150)',
     'admin.paperAdd': 'הוספה',
     'admin.paperInvalid': 'מזהה לוח לא מוכר — בדקו את המספר שמודפס על הדף.',
+    'admin.paperSizeMismatch':
+      'לוח {id} הוא {size}×{size}, אבל המשחק הנוכחי הוא {game}×{game} — הוא לא יכול להשתתף בסבב הזה.',
+    'admin.paperDownload': 'הורדת דפים להדפסה (PDF)',
     'admin.paperHint': 'משתתפי הדפים מסמנים ביד; כאן הלוח שלהם מסתמן אוטומטית לפי השאלות שנשאלו.',
     'admin.unauthorized': 'מפתח ניהול שגוי — השרת דחה אותו.',
     'admin.answerKey': 'מפתח התשובות',

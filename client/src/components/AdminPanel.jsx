@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { DoorClosed, DoorOpen, Eye, EyeOff, Pause, Play, Plus, Printer, SkipForward, X } from 'lucide-react';
+import {
+  DoorClosed,
+  DoorOpen,
+  Download,
+  Eye,
+  EyeOff,
+  Pause,
+  Play,
+  Plus,
+  Printer,
+  SkipForward,
+  X,
+} from 'lucide-react';
 
 import { SERVER_URL } from '../lib/socket';
 import { useI18n } from '../lib/i18n';
@@ -20,7 +32,8 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
   const [showKey, setShowKey] = useState(false);
   const [paper, setPaper] = useState([]);
   const [paperInput, setPaperInput] = useState('');
-  const [paperError, setPaperError] = useState(false);
+  const [paperError, setPaperError] = useState(null); // { code, vars }
+  const [downloading, setDownloading] = useState(null);
 
   const call = useCallback(
     async (path, method = 'POST', body) => {
@@ -85,14 +98,45 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
     const id = paperInput.trim();
     if (!id) return;
     const data = await call('paper', 'POST', { id });
-    setPaperError(Boolean(data?.unknown?.length));
+    if (data?.mismatched?.length) {
+      const bad = data.mismatched[0];
+      setPaperError({
+        code: 'admin.paperSizeMismatch',
+        vars: { id: bad.id, size: bad.size, game: data.gameSize },
+      });
+    } else if (data?.unknown?.length) {
+      setPaperError({ code: 'admin.paperInvalid' });
+    } else {
+      setPaperError(null);
+      setPaperInput('');
+    }
     if (data?.registered) setPaper(data.registered);
-    if (!data?.unknown?.length) setPaperInput('');
   };
 
   const removePaper = async (id) => {
     const data = await call(`paper/${id}`, 'DELETE');
     if (data?.registered) setPaper(data.registered);
+  };
+
+  /** Fetch with the auth header, then hand the browser a blob to save. */
+  const downloadPdf = async (size) => {
+    setDownloading(size);
+    try {
+      const headers = credential?.token
+        ? { 'x-admin-token': credential.token }
+        : { 'x-admin-key': credential?.key ?? '' };
+      const response = await fetch(`${SERVER_URL}/api/admin/print/${size}`, { headers });
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `shekel-bingo-${size}x${size}.pdf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setDownloading(null);
+    }
   };
 
   const exhausted = remaining === 0;
@@ -216,7 +260,9 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
         </button>
       </form>
       {paperError && (
-        <p className="mt-2 text-xs font-semibold text-rose-600">{t('admin.paperInvalid')}</p>
+        <p className="mt-2 text-xs font-semibold text-rose-600">
+          {t(paperError.code, paperError.vars)}
+        </p>
       )}
       {paper.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
@@ -240,6 +286,26 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
         </div>
       )}
       <p className="mt-2 text-[11px] leading-snug text-sk-gray">{t('admin.paperHint')}</p>
+
+      {/* The print-ready PDF sheets, downloadable right here. */}
+      <p className="mt-3 mb-1.5 text-[10px] font-semibold tracking-widest text-sk-gray uppercase">
+        {t('admin.paperDownload')}
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {[3, 4, 5].map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => downloadPdf(size)}
+            disabled={downloading !== null}
+            className="flex items-center justify-center gap-1.5 rounded-xl bg-white py-2 text-xs font-bold text-sk-teal-3 shadow-sm ring-1 ring-sk-teal-2/30 transition-colors hover:bg-sk-teal-soft disabled:opacity-50"
+            dir="ltr"
+          >
+            <Download className="h-3.5 w-3.5" />
+            {downloading === size ? '…' : `${size}×${size}`}
+          </button>
+        ))}
+      </div>
 
       {/* Ending the event is deliberate and rare — quiet styling, loud confirm. */}
       <button

@@ -156,3 +156,41 @@ claimAuditSchema.index({ roundId: 1, at: -1 });
 claimAuditSchema.index({ playerId: 1, at: -1 });
 
 export const ClaimAudit = model('ClaimAudit', claimAuditSchema);
+
+/* ── Paper archive ──────────────────────────────────────────────────────────── */
+
+/**
+ * The 150 printed boards, archived FOREVER. Seeded once from
+ * server/paper-boards.js and never overwritten afterwards — once sheets are in
+ * people's hands, the ID printed on them must resolve to these exact cells no
+ * matter how many games are opened, closed or reset. The server prefers this
+ * collection over the bundled file at boot, so even a regenerated file cannot
+ * silently change a printed board.
+ */
+const paperBoardSchema = new Schema(
+  {
+    boardId: { type: String, required: true, unique: true }, // "1".."150"
+    size: { type: Number, enum: BOARD_SIZES, required: true },
+    cells: { type: Schema.Types.Mixed, required: true },
+  },
+  { timestamps: true },
+);
+
+export const PaperBoard = model('PaperBoard', paperBoardSchema);
+
+/**
+ * The print-ready PDFs themselves (~1.7-3.1 MB each — far under the 16 MB
+ * document cap). Stored so the host can download them from the app on any
+ * device, and so they survive independently of the deployed filesystem.
+ */
+const printFileSchema = new Schema(
+  {
+    name: { type: String, required: true, unique: true },
+    contentType: { type: String, default: 'application/pdf' },
+    bytes: Number,
+    data: { type: Buffer, required: true },
+  },
+  { timestamps: true },
+);
+
+export const PrintFile = model('PrintFile', printFileSchema);

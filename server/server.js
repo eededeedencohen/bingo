@@ -69,6 +69,7 @@ import {
   verifyClaim,
 } from './game.js';
 import { PAPER_BOARDS } from './paper-boards.js';
+import { loadPrintFile, printFileName, printFilePath, syncPaperArchive } from './db/archive.js';
 import { login, logout, validateToken } from './auth.js';
 import { closeMongo, connectMongo, dbState } from './db/mongo.js';
 import {
@@ -138,7 +139,9 @@ const players = new Map();
  * marks are by definition the asked questions, so their progress is computed —
  * never claimed.
  */
-const PAPER_BY_ID = new Map(PAPER_BOARDS.map((b) => [b.id, b]));
+// Starts from the bundled file; swapped for the MongoDB archive once it loads —
+// the archive is immutable and outlives every game, reset and redeploy.
+let PAPER_BY_ID = new Map(PAPER_BOARDS.map((b) => [b.id, b]));
 const registeredPaper = new Set();
 
 /**
@@ -347,7 +350,13 @@ function askAndBroadcast() {
 function resetGame(size = game.size) {
   game = createGameState(size);
   beginRound(size, lobbyOpen, gameId);
-  recordPaper(registeredPaper); // carry the registered sheets into the new round
+
+  // A round only tracks sheets of its own size — switching 5×5 → 3×3 drops the
+  // 5×5 sheets from tracking (they physically can't play this round).
+  for (const id of [...registeredPaper]) {
+    if (PAPER_BY_ID.get(id)?.size !== size) registeredPaper.delete(id);
+  }
+  recordPaper(registeredPaper); // carry the surviving sheets into the new round
 
   for (const player of players.values()) {
     player.board = generateBoard(game.size);
@@ -724,24 +733,28 @@ admin.post('/paper', (req, res) => {
   const ids = Array.isArray(req.body?.ids) ? req.body.ids : [req.body?.id];
   const added = [];
   const unknown = [];
+  const mismatched = []; // right board, wrong game: a 3×3 sheet in a 5×5 round
   for (const raw of ids) {
     const id = String(raw ?? '').trim();
     if (!id) continue;
-    if (PAPER_BY_ID.has(id)) {
+    const board = PAPER_BY_ID.get(id);
+    if (!board) unknown.push(id);
+    else if (board.size !== game.size) mismatched.push({ id, size: board.size });
+    else {
       registeredPaper.add(id);
       added.push(id);
-    } else {
-      unknown.push(id);
     }
   }
   if (added.length) {
     recordPaper(registeredPaper);
     broadcastRoster();
   }
-  res.status(unknown.length && !added.length ? 404 : 200).json({
-    ok: unknown.length === 0,
+  res.status((unknown.length || mismatched.length) && !added.length ? 422 : 200).json({
+    ok: unknown.length === 0 && mismatched.length === 0,
     added,
     unknown,
+    mismatched,
+    gameSize: game.size,
     registered: [...registeredPaper],
   });
 });
@@ -753,6 +766,31 @@ admin.delete('/paper/:id', (req, res) => {
     broadcastRoster();
   }
   res.json({ ok: removed, registered: [...registeredPaper] });
+});
+
+/**
+ * The print-ready PDFs, straight from the archive (disk as fallback) — so the
+ * host can download and print from any device without touching the repo.
+ */
+admin.get('/print/:size', async (req, res) => {
+  const size = Number(req.params.size);
+  if (![3, 4, 5].includes(size)) return res.status(404).json({ error: 'Unknown size' });
+
+  const name = printFileName(size);
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${name}"`);
+
+  const archived = await loadPrintFile(size);
+  if (archived) {
+    // .lean() hands back a BSON Binary, and res.send() would JSON-serialise it
+    // (base64, +33%, not a PDF). Normalise to a real Buffer and end the stream.
+    const raw = archived.data;
+    const buf = Buffer.isBuffer(raw) ? raw : Buffer.from(raw.buffer ?? raw);
+    return res.end(buf);
+  }
+  return res.sendFile(printFilePath(size), (error) => {
+    if (error) res.status(404).end();
+  });
 });
 
 /** The answer key for what has been asked so far. Host eyes only. */
@@ -952,6 +990,10 @@ connectMongo()
   .then(async (connected) => {
     if (connected) {
       startPersistence();
+      // The archive outranks the bundled file: once boards are in Mongo, a
+      // regenerated paper-boards.js can never silently change a printed card.
+      const archived = await syncPaperArchive(PAPER_BOARDS);
+      if (archived) PAPER_BY_ID = new Map(archived.map((b) => [b.id, b]));
       await restore();
     } else {
       beginRound(game.size);

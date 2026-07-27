@@ -56,7 +56,11 @@ function boardHtml(board) {
         <div class="title">בינגו שק״ל</div>
         <div class="subtitle">סמנו את התשובה כששואלים את השאלה שלה · שורה, טור או אלכסון מלא = בינגו!</div>
       </div>
-      <div class="badge"><div class="badge-label">מס׳ לוח</div><div class="badge-id">${board.id}</div></div>
+      <div class="badge">
+        <div class="badge-label">מס׳ לוח</div>
+        <div class="badge-id">${board.id}</div>
+        <div class="badge-size">${board.size}×${board.size}</div>
+      </div>
     </div>
     <div class="grid" style="grid-template-columns: repeat(${board.size}, 1fr);">${rows}</div>
   </div>`;
@@ -109,6 +113,7 @@ function docHtml(boards) {
   }
   .badge-label { font-size: 2.6mm; color: var(--teal-2); font-weight: 700; }
   .badge-id { font-size: 8mm; font-weight: 900; color: var(--purple); line-height: 1; direction: ltr; }
+  .badge-size { font-size: 3mm; font-weight: 700; color: var(--teal-2); direction: ltr; margin-top: 0.5mm; }
 
   .grid { flex: 1; display: grid; gap: 2mm; }
   .cell {
