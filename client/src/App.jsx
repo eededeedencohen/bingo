@@ -133,7 +133,7 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-6xl px-3 py-4 sm:px-6 sm:py-8">
+    <div className="mx-auto flex min-h-dvh w-full max-w-6xl flex-col items-center px-3 py-4 sm:px-6 sm:py-8">
       <TopBar connected={connected} online={online} status={status} playerName={me.name} />
 
       {/*
