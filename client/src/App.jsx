@@ -80,7 +80,12 @@ export default function App() {
 
         <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
           <section className="space-y-4">
-            <QuestionCard current={current} asked={asked.length} total={total} />
+            <QuestionCard
+              current={current}
+              asked={asked.length}
+              total={total}
+              answer={roster?.currentAnswer ?? null}
+            />
             <AdminPanel
               credential={adminCredential}
               status={status}

@@ -251,10 +251,32 @@ function progressFor(player) {
  * path is untouched. Cards are deliberately excluded: a roster row never needs
  * one, and shipping 60 cards to any socket in this room would be a cheat vector.
  */
+/** Where `questionId` sits on a board, or null if it isn't on the card. */
+function findCell(board, questionId) {
+  for (let r = 0; r < board.length; r += 1) {
+    for (let c = 0; c < board.length; c += 1) {
+      if (board[r][c] === questionId) return [r, c];
+    }
+  }
+  return null;
+}
+
 function rosterPayload() {
+  const currentQ = game.asked.at(-1) ?? null;
   const rows = [];
+
   for (const player of players.values()) {
     const { marked, needs, wrong } = progressFor(player);
+
+    // The host's at-a-glance signal for the CURRENT question: does this card
+    // hold its answer, and has the player ticked it yet? Resets by definition
+    // with every question, because it derives from the latest ask.
+    let current = 'none'; // none | pending | marked
+    if (currentQ) {
+      const cell = findCell(player.board, currentQ.questionId);
+      if (cell) current = player.marks.has(cellKey(cell[0], cell[1])) ? 'marked' : 'pending';
+    }
+
     rows.push({
       playerId: player.playerId,
       name: player.name,
@@ -264,6 +286,7 @@ function rosterPayload() {
       marked,
       needs,
       wrong,
+      current,
       won: game.winners.some((w) => w.playerId === player.playerId),
       claims: player.claims,
     });
@@ -285,17 +308,27 @@ function rosterPayload() {
       marked,
       needs,
       wrong: 0,
+      // Paper marks track the asked set automatically, so "on the card" = green.
+      current: currentQ && findCell(board.cells, currentQ.questionId) ? 'marked' : 'none',
       won,
       claims: null,
     });
   }
 
   rows.sort((a, b) => a.needs - b.needs || b.marked - a.marked);
+
+  const question = currentQ ? QUESTION_BY_ID.get(currentQ.questionId) : null;
+
   return {
     players: rows,
     online: connectedPlayers(), // matches the presence broadcast — not raw sockets
     total: players.size,
+    // Every participant in the game, digital and paper alike.
+    participants: players.size + registeredPaper.size,
     paper: [...registeredPaper],
+    // Host-only by construction (this payload never leaves the admin room):
+    // the answer to the question on screen, for the tap-to-reveal toggle.
+    currentAnswer: question ? { he: question.he.a, en: question.en.a } : null,
   };
 }
 

@@ -23,7 +23,10 @@ export default function PlayerRoster({ roster }) {
         <Users className="h-3.5 w-3.5" />
         <span>{t('roster.title')}</span>
         <span className="ms-auto normal-case tabular-nums text-slate-400">
-          {t('roster.online', { count: roster?.online ?? 0 })}
+          {t('roster.counts', {
+            online: roster?.online ?? 0,
+            total: roster?.participants ?? 0,
+          })}
         </span>
       </div>
 
@@ -43,9 +46,15 @@ export default function PlayerRoster({ roster }) {
                 className={`flex items-center gap-2 rounded-xl p-2.5 text-sm ${
                   player.won
                     ? 'bg-sk-purple-soft ring-1 ring-sk-purple/30'
-                    : player.needs === 1
-                      ? 'bg-sk-teal-soft ring-1 ring-sk-teal-2/40'
-                      : 'bg-slate-50'
+                    : player.current === 'marked'
+                      ? // has the current answer AND ticked it — green
+                        'bg-emerald-100 ring-1 ring-emerald-300'
+                      : player.current === 'pending'
+                        ? // has the current answer but hasn't ticked it yet — yellow
+                          'bg-amber-100 ring-1 ring-amber-300'
+                        : player.needs === 1
+                          ? 'bg-sk-teal-soft ring-1 ring-sk-teal-2/40'
+                          : 'bg-slate-50'
                 }`}
               >
                 {player.paper && <Printer className="h-3.5 w-3.5 shrink-0 text-sk-purple-2" />}
