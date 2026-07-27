@@ -23,14 +23,14 @@ export default function AskedList({ asked }) {
 
   return (
     <div className="glass p-4 sm:p-5">
-      <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+      <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-sk-gray uppercase">
         <History className="h-3.5 w-3.5" />
         <span>{t('asked.title')}</span>
-        <span className="ms-auto tabular-nums text-slate-500">{asked.length}</span>
+        <span className="ms-auto tabular-nums text-slate-400">{asked.length}</span>
       </div>
 
       {asked.length === 0 ? (
-        <p className="py-2 text-sm text-slate-500">{t('asked.empty')}</p>
+        <p className="py-2 text-sm text-sk-gray">{t('asked.empty')}</p>
       ) : (
         <ul className="space-y-2">
           <AnimatePresence initial={false}>
@@ -42,9 +42,9 @@ export default function AskedList({ asked }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                className="flex gap-2.5 rounded-xl bg-white/5 p-2.5 text-sm text-slate-300"
+                className="flex gap-2.5 rounded-xl bg-sk-teal-soft/60 p-2.5 text-sm text-slate-700"
               >
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white/10 text-[10px] font-bold tabular-nums text-slate-400">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-white text-[10px] font-bold tabular-nums text-sk-purple ring-1 ring-sk-purple/10">
                   {item.index}
                 </span>
                 <span className="leading-snug">{item[lang] ?? item.en}</span>
@@ -58,7 +58,7 @@ export default function AskedList({ asked }) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 w-full rounded-xl py-2 text-xs font-semibold text-slate-400 transition-colors hover:bg-white/5 hover:text-slate-200"
+          className="mt-3 w-full rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
         >
           {expanded ? t('asked.collapse') : t('asked.expand')}
         </button>

@@ -5,7 +5,8 @@ import { PartyPopper, X } from 'lucide-react';
 
 import { useI18n } from '../lib/i18n';
 
-const COLORS = ['#38bdf8', '#a78bfa', '#f472b6', '#fbbf24', '#34d399'];
+/** Confetti in the SHEKEL palette: teals and purples straight from the logo. */
+const COLORS = ['#78c8c8', '#4ca6a5', '#533a72', '#8a75b4', '#b7e6e4'];
 
 /**
  * Celebration layer. One big burst on mount, then ~2s of side cannons.
@@ -37,7 +38,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-md"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-sk-purple/40 p-4 backdrop-blur-md"
     >
       <motion.div
         initial={{ scale: 0.7, y: 40, opacity: 0 }}
@@ -46,10 +47,10 @@ export default function WinOverlay({ winner, isMe, onClose }) {
         transition={{ type: 'spring', stiffness: 240, damping: 20 }}
         className="glass relative w-full max-w-md overflow-hidden p-8 text-center"
       >
-        {/* Slow rotating glow behind the card. */}
+        {/* Slow rotating brand glow behind the card. */}
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute -inset-24 bg-[conic-gradient(from_0deg,#38bdf8,#a78bfa,#f472b6,#fbbf24,#38bdf8)] opacity-20 blur-3xl"
+          className="pointer-events-none absolute -inset-24 bg-[conic-gradient(from_0deg,#78c8c8,#a48fd0,#533a72,#4ca6a5,#78c8c8)] opacity-15 blur-3xl"
           animate={reduced ? undefined : { rotate: 360 }}
           transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
         />
@@ -58,7 +59,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute top-4 end-4 z-10 rounded-full p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+          className="absolute top-4 end-4 z-10 rounded-full p-2 text-slate-400 transition-colors hover:bg-sk-purple/10 hover:text-sk-ink"
         >
           <X className="h-5 w-5" />
         </button>
@@ -67,16 +68,16 @@ export default function WinOverlay({ winner, isMe, onClose }) {
           <motion.div
             animate={reduced ? undefined : { rotate: [0, -12, 12, 0], y: [0, -8, 0] }}
             transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-            className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 to-pink-500 shadow-2xl shadow-amber-500/40"
+            className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-sk-teal-2 to-sk-purple shadow-2xl shadow-sk-purple/40"
           >
             <PartyPopper className="h-10 w-10 text-white" strokeWidth={2} />
           </motion.div>
 
-          <h2 className="bg-gradient-to-r from-amber-300 via-pink-300 to-sky-300 bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
+          <h2 className="bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
             {t('win.title')}
           </h2>
 
-          <p className="mt-3 text-lg text-slate-200">
+          <p className="mt-3 text-lg text-slate-700">
             {isMe ? (
               t('win.you')
             ) : (
@@ -85,7 +86,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
             )}
           </p>
 
-          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-slate-400">
+          <div className="mt-6 flex items-center justify-center gap-6 text-sm text-sk-gray">
             <Stat label={t('win.questions')} value={winner.askedCount} />
             <Stat label={t('win.lines')} value={winner.lines.length} />
           </div>
@@ -93,7 +94,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="mt-7 w-full rounded-2xl bg-white/10 py-3 font-semibold text-white transition-colors hover:bg-white/20"
+            className="mt-7 w-full rounded-2xl bg-sk-purple py-3 font-semibold text-white transition-colors hover:bg-sk-purple-2"
           >
             {t('win.close')}
           </button>
@@ -106,7 +107,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
 function Stat({ label, value }) {
   return (
     <div>
-      <div className="text-2xl font-bold tabular-nums text-white">{value}</div>
+      <div className="text-2xl font-bold tabular-nums text-sk-ink">{value}</div>
       <div className="text-xs tracking-widest uppercase">{label}</div>
     </div>
   );

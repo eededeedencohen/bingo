@@ -6,7 +6,7 @@ import { useI18n } from '../lib/i18n';
 /**
  * The BINGO button. It stays clickable at all times (claiming a card you haven't
  * completed is a legitimate move — the server just says no), but it only *pulses*
- * once a real line exists, which is the whole call to action.
+ * once a full line is marked, which is the whole call to action.
  */
 export default function ClaimButton({ onClaim, hasBingo, disabled, claiming, markedCount }) {
   const { t } = useI18n();
@@ -20,14 +20,20 @@ export default function ClaimButton({ onClaim, hasBingo, disabled, claiming, mar
       whileTap={{ scale: disabled ? 1 : 0.97 }}
       animate={
         hasBingo && !disabled
-          ? { boxShadow: ['0 0 0 0 rgba(251,191,36,0)', '0 0 40px 8px rgba(251,191,36,0.55)', '0 0 0 0 rgba(251,191,36,0)'] }
+          ? {
+              boxShadow: [
+                '0 0 0 0 rgba(83,58,114,0)',
+                '0 0 40px 8px rgba(83,58,114,0.4)',
+                '0 0 0 0 rgba(83,58,114,0)',
+              ],
+            }
           : { boxShadow: '0 0 0 0 rgba(0,0,0,0)' }
       }
       transition={{ duration: 1.6, repeat: hasBingo ? Infinity : 0, ease: 'easeInOut' }}
       className={`relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl px-6 py-5 text-xl font-extrabold tracking-widest uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${
         hasBingo
-          ? 'bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 text-white'
-          : 'bg-white/8 text-slate-200 ring-1 ring-white/10 hover:bg-white/12'
+          ? 'bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple text-white'
+          : 'bg-white text-sk-ink shadow-sm ring-1 ring-sk-purple/15 hover:bg-sk-purple-soft'
       }`}
     >
       {/* Light sweep across the face while a win is available. */}

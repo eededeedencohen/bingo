@@ -19,16 +19,16 @@ export default function PlayerRoster({ roster }) {
 
   return (
     <div className="glass p-4">
-      <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+      <div className="mb-3 flex items-center gap-2 text-xs font-semibold tracking-widest text-sk-gray uppercase">
         <Users className="h-3.5 w-3.5" />
         <span>{t('roster.title')}</span>
-        <span className="ms-auto normal-case tabular-nums text-slate-500">
+        <span className="ms-auto normal-case tabular-nums text-slate-400">
           {t('roster.online', { count: roster?.online ?? 0 })}
         </span>
       </div>
 
       {players.length === 0 ? (
-        <p className="py-2 text-sm text-slate-500">{t('roster.empty')}</p>
+        <p className="py-2 text-sm text-sk-gray">{t('roster.empty')}</p>
       ) : (
         <ul className="max-h-80 space-y-1.5 overflow-y-auto pe-1">
           <AnimatePresence initial={false}>
@@ -42,28 +42,28 @@ export default function PlayerRoster({ roster }) {
                 transition={{ type: 'spring', stiffness: 400, damping: 32 }}
                 className={`flex items-center gap-2 rounded-xl p-2.5 text-sm ${
                   player.won
-                    ? 'bg-amber-400/15 ring-1 ring-amber-400/40'
+                    ? 'bg-sk-purple-soft ring-1 ring-sk-purple/30'
                     : player.needs === 1
-                      ? 'bg-emerald-400/10 ring-1 ring-emerald-400/30'
-                      : 'bg-white/5'
+                      ? 'bg-sk-teal-soft ring-1 ring-sk-teal-2/40'
+                      : 'bg-slate-50'
                 }`}
               >
                 <span
                   className={`truncate font-semibold ${
-                    player.connected ? 'text-slate-100' : 'text-slate-500'
+                    player.connected ? 'text-sk-ink' : 'text-slate-400'
                   }`}
                 >
                   {/* bdi keeps a Latin name from dragging Hebrew punctuation around */}
                   <bdi>{player.name}</bdi>
                 </span>
 
-                {!player.connected && <WifiOff className="h-3.5 w-3.5 shrink-0 text-slate-500" />}
+                {!player.connected && <WifiOff className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
 
                 <span className="ms-auto flex shrink-0 items-center gap-2">
                   {player.wrong > 0 && (
                     <span
                       title={t('roster.wrong', { n: player.wrong })}
-                      className="flex items-center gap-1 text-xs font-semibold text-rose-300"
+                      className="flex items-center gap-1 text-xs font-semibold text-rose-600"
                     >
                       <AlertTriangle className="h-3.5 w-3.5" />
                       {player.wrong}
@@ -71,16 +71,16 @@ export default function PlayerRoster({ roster }) {
                   )}
 
                   {player.won ? (
-                    <span className="flex items-center gap-1 text-xs font-bold text-amber-300">
+                    <span className="flex items-center gap-1 text-xs font-bold text-sk-purple">
                       <Trophy className="h-3.5 w-3.5" />
                       {t('roster.won')}
                     </span>
                   ) : player.needs === 1 ? (
-                    <span className="text-xs font-bold text-emerald-300">
+                    <span className="text-xs font-bold text-sk-teal-3">
                       {t('roster.closeToWin')}
                     </span>
                   ) : (
-                    <span className="text-xs tabular-nums text-slate-400">
+                    <span className="text-xs tabular-nums text-sk-gray">
                       {player.marked}/25
                     </span>
                   )}

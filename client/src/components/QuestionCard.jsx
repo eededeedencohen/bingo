@@ -13,7 +13,7 @@ export default function QuestionCard({ current, asked, total }) {
 
   return (
     <div className="glass relative overflow-hidden p-6 sm:p-8">
-      <div className="mb-5 flex items-center justify-between text-xs font-semibold tracking-widest text-slate-400 uppercase">
+      <div className="mb-5 flex items-center justify-between text-xs font-semibold tracking-widest text-sk-gray uppercase">
         <span className="flex items-center gap-2">
           <HelpCircle className="h-3.5 w-3.5" />
           {current ? t('question.label', { n: current.index }) : t('app.titleAccent')}
@@ -32,7 +32,7 @@ export default function QuestionCard({ current, asked, total }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.97 }}
               transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-              className="text-center text-2xl leading-snug font-bold text-white sm:text-3xl"
+              className="text-center text-2xl leading-snug font-bold text-sk-ink sm:text-3xl"
             >
               {current[lang] ?? current.en}
             </motion.p>
@@ -42,7 +42,7 @@ export default function QuestionCard({ current, asked, total }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="text-center text-base font-medium text-slate-500"
+              className="text-center text-base font-medium text-sk-gray"
             >
               {t('question.waiting')}
             </motion.p>
@@ -51,15 +51,15 @@ export default function QuestionCard({ current, asked, total }) {
       </div>
 
       {current && (
-        <p className="mt-5 flex items-center justify-center gap-2 text-center text-sm text-slate-400">
+        <p className="mt-5 flex items-center justify-center gap-2 text-center text-sm text-sk-gray">
           <MousePointerClick className="h-4 w-4 shrink-0" />
           {t('question.hint')}
         </p>
       )}
 
-      <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
+      <div className="mt-5 h-1.5 w-full overflow-hidden rounded-full bg-sk-purple/10">
         <motion.div
-          className="h-full rounded-full bg-gradient-to-r from-sky-400 via-fuchsia-500 to-amber-400"
+          className="h-full rounded-full bg-gradient-to-r from-sk-teal via-sk-purple-2 to-sk-purple"
           animate={{ width: total ? `${(asked / total) * 100}%` : '0%' }}
           transition={{ type: 'spring', stiffness: 120, damping: 20 }}
         />

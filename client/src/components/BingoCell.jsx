@@ -1,7 +1,7 @@
 import { memo } from 'react';
 // `motion` is Framer Motion's current package name — same library, same API.
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Star } from 'lucide-react';
+import { Check, Heart } from 'lucide-react';
 
 import { COLUMNS } from '../lib/theme';
 import { useI18n } from '../lib/i18n';
@@ -25,9 +25,9 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
       aria-pressed={marked}
       aria-label={label}
       whileTap={isFree ? undefined : { scale: 0.93 }}
-      className="relative aspect-square rounded-2xl focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none disabled:cursor-default"
+      className="relative aspect-square rounded-2xl focus-visible:ring-2 focus-visible:ring-sk-purple/60 focus-visible:outline-none disabled:cursor-default"
     >
-      <div className="absolute inset-0 rounded-2xl border border-white/10 bg-white/[0.03]" />
+      <div className="absolute inset-0 rounded-2xl border border-sk-purple/10 bg-white shadow-sm" />
 
       <AnimatePresence>
         {marked && (
@@ -44,7 +44,7 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
 
       {isWinning && (
         <motion.div
-          className="pointer-events-none absolute -inset-px rounded-2xl ring-2 ring-white/80"
+          className="pointer-events-none absolute -inset-px rounded-2xl ring-2 ring-sk-purple/80"
           animate={{ opacity: [0.25, 1, 0.25] }}
           transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
         />
@@ -55,7 +55,7 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
           initial={{ scale: 0, rotate: -90 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: 'spring', stiffness: 500, damping: 20, delay: 0.05 }}
-          className="absolute top-1 end-1 z-20 rounded-full bg-white/25 p-0.5"
+          className="absolute top-1 end-1 z-20 rounded-full bg-white/30 p-0.5"
         >
           <Check className="h-3 w-3 text-white" strokeWidth={3.5} />
         </motion.span>
@@ -64,14 +64,13 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
       <div className="relative flex h-full items-center justify-center p-1.5">
         {isFree ? (
           <div className="flex flex-col items-center gap-0.5">
-            <Star
-              className={`h-5 w-5 ${marked ? 'text-white' : style.text}`}
+            {/* The heart is the Shekel mark's own symbol — it IS the free cell. */}
+            <Heart
+              className={`h-5 w-5 ${marked ? 'text-white' : 'text-sk-purple'}`}
               fill="currentColor"
               strokeWidth={0}
             />
-            <span
-              className={`text-[9px] font-bold ${marked ? 'text-white/90' : 'text-slate-400'}`}
-            >
+            <span className={`text-[9px] font-bold ${marked ? 'text-white/90' : 'text-sk-gray'}`}>
               {label}
             </span>
           </div>
@@ -81,7 +80,7 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
           <span
             className={`text-center leading-tight font-bold hyphens-auto ${
               label.length > 9 ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'
-            } ${marked ? 'text-white' : 'text-slate-200'}`}
+            } ${marked ? 'text-white' : 'text-sk-ink'}`}
           >
             {label}
           </span>

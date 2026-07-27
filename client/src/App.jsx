@@ -117,7 +117,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={authState.signOut}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-300"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
                 >
                   <LogOut className="h-3.5 w-3.5" />
                   {t('login.signOut')}

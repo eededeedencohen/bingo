@@ -21,7 +21,7 @@ export const LANGUAGES = [
 
 const DICTIONARY = {
   en: {
-    'app.title': 'Summer',
+    'app.title': 'Shekel',
     'app.titleAccent': 'Bingo',
 
     'join.subtitle':
@@ -105,7 +105,7 @@ const DICTIONARY = {
 
   he: {
     'app.title': 'בינגו',
-    'app.titleAccent': 'קיץ',
+    'app.titleAccent': 'שק"ל',
 
     'join.subtitle':
       'על הכרטיס שלכם יש תשובות. המנחה שואל שאלה — מצאו את התשובה וסמנו אותה בעצמכם.',

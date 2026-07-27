@@ -14,7 +14,7 @@ export default function LanguageToggle({ className = '' }) {
   return (
     <div
       aria-label={t('lang.switch')}
-      className={`flex items-center gap-1 rounded-full bg-white/5 p-1 ring-1 ring-white/10 ${className}`}
+      className={`flex items-center gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-sk-purple/15 ${className}`}
     >
       {LANGUAGES.map((option) => {
         const active = option.code === lang;
@@ -25,13 +25,13 @@ export default function LanguageToggle({ className = '' }) {
             onClick={() => setLang(option.code)}
             aria-pressed={active}
             className={`relative rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-              active ? 'text-white' : 'text-slate-400 hover:text-slate-200'
+              active ? 'text-white' : 'text-sk-gray hover:text-sk-ink'
             }`}
           >
             {active && (
               <motion.span
                 layoutId={`lang-pill-${pillId}`}
-                className="absolute inset-0 rounded-full bg-gradient-to-r from-sky-500 to-violet-500"
+                className="absolute inset-0 rounded-full bg-gradient-to-r from-sk-teal-2 to-sk-purple"
                 transition={{ type: 'spring', stiffness: 400, damping: 32 }}
               />
             )}

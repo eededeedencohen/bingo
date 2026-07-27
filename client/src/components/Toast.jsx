@@ -16,7 +16,7 @@ export default function Toast({ feedback }) {
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 20, scale: 0.95 }}
           transition={{ type: 'spring', stiffness: 320, damping: 26 }}
-          className="fixed inset-x-0 bottom-6 z-40 mx-auto flex w-fit items-center gap-2.5 rounded-2xl border border-rose-400/30 bg-rose-500/15 px-5 py-3 text-sm font-semibold text-rose-100 shadow-2xl backdrop-blur-xl"
+          className="fixed inset-x-0 bottom-6 z-40 mx-auto flex w-fit items-center gap-2.5 rounded-2xl border border-rose-200 bg-rose-50/95 px-5 py-3 text-sm font-semibold text-rose-700 shadow-2xl shadow-rose-200/50 backdrop-blur-xl"
         >
           <AlertCircle className="h-4.5 w-4.5 shrink-0" />
           {t(`error.${feedback.code}`, { count: feedback.count })}

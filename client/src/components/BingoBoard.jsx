@@ -57,7 +57,7 @@ function BoardSkeleton() {
     <div className="glass p-3 sm:p-5">
       <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {Array.from({ length: 30 }, (_, i) => (
-          <div key={i} className="aspect-square animate-pulse rounded-2xl bg-white/5" />
+          <div key={i} className="aspect-square animate-pulse rounded-2xl bg-sk-purple/5" />
         ))}
       </div>
     </div>

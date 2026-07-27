@@ -29,23 +29,23 @@ export default function AdminLogin({ onLogin, busy, error }) {
           <LanguageToggle />
         </div>
 
-        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-3xl bg-gradient-to-br from-amber-400 via-orange-500 to-pink-500 shadow-2xl shadow-orange-500/40">
-          <KeyRound className="h-8 w-8 text-white" strokeWidth={2.2} />
-        </div>
+        <img
+          src="/shekel-mark.png"
+          alt='שק"ל'
+          className="mx-auto mb-6 h-auto w-52 drop-shadow-sm"
+        />
 
-        <h1 className="text-center text-2xl font-extrabold tracking-tight">
-          {t('login.title')}
-        </h1>
-        <p className="mt-2 text-center text-sm text-slate-400">{t('login.subtitle')}</p>
+        <h1 className="text-center text-2xl font-extrabold tracking-tight">{t('login.title')}</h1>
+        <p className="mt-2 text-center text-sm text-sk-gray">{t('login.subtitle')}</p>
 
         <label
           htmlFor="admin-user"
-          className="mt-8 mb-2 block text-xs font-semibold tracking-widest text-slate-400 uppercase"
+          className="mt-8 mb-2 block text-xs font-semibold tracking-widest text-sk-gray uppercase"
         >
           {t('login.username')}
         </label>
         <div className="relative">
-          <User className="pointer-events-none absolute top-1/2 start-3.5 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <User className="pointer-events-none absolute top-1/2 start-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             id="admin-user"
             value={username}
@@ -53,18 +53,18 @@ export default function AdminLogin({ onLogin, busy, error }) {
             autoComplete="username"
             autoCapitalize="none"
             dir="ltr"
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 ps-10 pe-4 text-white placeholder:text-slate-500 focus:border-transparent focus:ring-2 focus:ring-amber-400 focus:outline-none"
+            className="w-full rounded-2xl border border-sk-purple/15 bg-white py-3 ps-10 pe-4 text-sk-ink placeholder:text-slate-400 focus:border-transparent focus:ring-2 focus:ring-sk-purple/60 focus:outline-none"
           />
         </div>
 
         <label
           htmlFor="admin-pass"
-          className="mt-4 mb-2 block text-xs font-semibold tracking-widest text-slate-400 uppercase"
+          className="mt-4 mb-2 block text-xs font-semibold tracking-widest text-sk-gray uppercase"
         >
           {t('login.password')}
         </label>
         <div className="relative">
-          <KeyRound className="pointer-events-none absolute top-1/2 start-3.5 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <KeyRound className="pointer-events-none absolute top-1/2 start-3.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             id="admin-pass"
             type="password"
@@ -72,12 +72,12 @@ export default function AdminLogin({ onLogin, busy, error }) {
             onChange={(event) => setPassword(event.target.value)}
             autoComplete="current-password"
             dir="ltr"
-            className="w-full rounded-2xl border border-white/10 bg-white/5 py-3 ps-10 pe-4 text-white placeholder:text-slate-500 focus:border-transparent focus:ring-2 focus:ring-amber-400 focus:outline-none"
+            className="w-full rounded-2xl border border-sk-purple/15 bg-white py-3 ps-10 pe-4 text-sk-ink placeholder:text-slate-400 focus:border-transparent focus:ring-2 focus:ring-sk-purple/60 focus:outline-none"
           />
         </div>
 
         {error && (
-          <p className="mt-4 rounded-xl bg-rose-500/10 p-3 text-center text-sm font-semibold text-rose-300 ring-1 ring-rose-400/30">
+          <p className="mt-4 rounded-xl bg-rose-50 p-3 text-center text-sm font-semibold text-rose-700 ring-1 ring-rose-200">
             {t(`login.${error}`)}
           </p>
         )}
@@ -87,7 +87,7 @@ export default function AdminLogin({ onLogin, busy, error }) {
           disabled={busy || !username || !password}
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 py-3.5 font-bold text-white shadow-lg shadow-orange-500/30 disabled:opacity-50"
+          className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple py-3.5 font-bold text-white shadow-lg shadow-sk-purple/30 disabled:opacity-50"
         >
           <LogIn className="h-5 w-5" />
           {busy ? t('login.checking') : t('login.submit')}

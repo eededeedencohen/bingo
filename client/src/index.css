@@ -2,27 +2,29 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Outfit covers Latin; Hebrew glyphs fall through to Heebo automatically. */
   --font-display: 'Outfit', 'Heebo', ui-sans-serif, system-ui, sans-serif;
 
-  --color-ink-900: #070a14;
-  --color-ink-800: #0b1020;
-  --color-ink-700: #121a30;
+  /*
+   * SHEKEL brand palette, sampled from the logo:
+   *   teal figures  #78C8C8, purple figure #533A72, gray wordmark #6B6B72.
+   * The -2/-3 steps are darker mixes for text and gradient ends; -soft are
+   * light washes for tinted surfaces on the white theme.
+   */
+  --color-sk-teal: #78c8c8;
+  --color-sk-teal-2: #4ca6a5;
+  --color-sk-teal-3: #2f7b7a;
+  --color-sk-teal-soft: #e4f5f4;
 
-  --animate-pulse-ring: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --color-sk-purple: #533a72;
+  --color-sk-purple-2: #7c64a6;
+  --color-sk-purple-3: #a48fd0;
+  --color-sk-purple-deep: #3f2c58;
+  --color-sk-purple-soft: #efeaf7;
+
+  --color-sk-ink: #332a4a;
+  --color-sk-gray: #6b6b72;
+
   --animate-shimmer: shimmer 2.6s linear infinite;
-}
-
-@keyframes pulse-ring {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.55;
-  }
-  70%,
-  100% {
-    transform: scale(1.55);
-    opacity: 0;
-  }
 }
 
 @keyframes shimmer {
@@ -40,14 +42,15 @@
   }
 
   body {
-    @apply bg-ink-900 font-display text-slate-100 antialiased;
-    /* Two soft light sources + a faint grid: depth without a single image asset. */
+    @apply bg-[#f7fbfb] font-display text-sk-ink antialiased;
+    /* Soft brand washes — teal from the top corners, purple from below — over a
+       faint grid, echoing the logo without shouting it. */
     background-image:
-      radial-gradient(60rem 40rem at 15% -10%, rgba(56, 189, 248, 0.14), transparent 60%),
-      radial-gradient(50rem 35rem at 90% 0%, rgba(168, 85, 247, 0.16), transparent 55%),
-      radial-gradient(45rem 30rem at 50% 110%, rgba(236, 72, 153, 0.1), transparent 60%),
-      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      radial-gradient(55rem 38rem at 12% -10%, rgba(120, 200, 200, 0.28), transparent 60%),
+      radial-gradient(48rem 34rem at 92% -6%, rgba(124, 100, 166, 0.16), transparent 55%),
+      radial-gradient(44rem 30rem at 50% 112%, rgba(120, 200, 200, 0.18), transparent 60%),
+      linear-gradient(rgba(83, 58, 114, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(83, 58, 114, 0.04) 1px, transparent 1px);
     background-size:
       auto,
       auto,
@@ -59,9 +62,10 @@
 }
 
 @layer components {
-  /* The one surface treatment used everywhere — keeps the design language tight. */
+  /* The one surface treatment used everywhere — keeps the design language tight.
+     (Historically a dark glass card; now a bright Shekel-branded one.) */
   .glass {
-    @apply rounded-3xl border border-white/10 bg-white/[0.04] shadow-2xl shadow-black/40 backdrop-blur-xl;
+    @apply rounded-3xl border border-sk-purple/10 bg-white/85 shadow-xl shadow-sk-purple/10 backdrop-blur-xl;
   }
 }
 
