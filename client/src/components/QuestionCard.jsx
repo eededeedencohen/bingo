@@ -18,9 +18,10 @@ export default function QuestionCard({ current, asked, total }) {
           <HelpCircle className="h-3.5 w-3.5" />
           {current ? t('question.label', { n: current.index }) : t('app.titleAccent')}
         </span>
-        <span className="tabular-nums" dir="ltr">
-          {t('question.counter', { asked, total })}
-        </span>
+        {/* No forced dir: the string carries Hebrew words ("מתוך"), and pinning
+            it LTR scrambled the word order. The page direction lays it out right
+            in both languages. */}
+        <span className="tabular-nums">{t('question.counter', { asked, total })}</span>
       </div>
 
       <div className="flex min-h-20 items-center justify-center sm:min-h-40">

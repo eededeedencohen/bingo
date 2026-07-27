@@ -187,11 +187,21 @@ const askedForClient = () =>
     return { index, he: question.he.q, en: question.en.q };
   });
 
+/** Joined players currently connected — the number every "online" shows. */
+function connectedPlayers() {
+  let online = 0;
+  for (const player of players.values()) if (player.connected) online += 1;
+  return online;
+}
+
 function publicState() {
   return {
     status: game.status,
     lobbyOpen,
     gameId,
+    // Seeded here too, not only via the presence broadcast: someone who just
+    // (re)loaded — the host especially — must not see 0 until the next join.
+    online: connectedPlayers(),
     size: game.size,
     asked: askedForClient(),
     current: askedForClient().at(-1) ?? null,
@@ -281,11 +291,9 @@ function rosterPayload() {
   }
 
   rows.sort((a, b) => a.needs - b.needs || b.marked - a.marked);
-  let online = 0;
-  for (const player of players.values()) if (player.connected) online += 1;
   return {
     players: rows,
-    online, // joined players, matching the presence broadcast — not raw sockets
+    online: connectedPlayers(), // matches the presence broadcast — not raw sockets
     total: players.size,
     paper: [...registeredPaper],
   };
@@ -299,9 +307,7 @@ function broadcastRoster() {
 function broadcastPresence() {
   // Joined players, not raw sockets: the admin and people still on the join
   // screen hold sockets too, and counting them as "online players" misleads.
-  let online = 0;
-  for (const player of players.values()) if (player.connected) online += 1;
-  io.emit('presence', { online });
+  io.emit('presence', { online: connectedPlayers() });
   broadcastRoster();
 }
 

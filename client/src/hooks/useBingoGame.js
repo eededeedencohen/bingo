@@ -71,6 +71,9 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
       syncIdentity(state.gameId);
       setStatus(state.status);
       setLobbyOpen(state.lobbyOpen ?? null);
+      // Presence normally arrives by broadcast, but a fresh page load — the
+      // host's refresh above all — must not show 0 until the next join.
+      if (typeof state.online === 'number') setOnline(state.online);
       setAsked(state.asked ?? []);
       setTotal(state.total ?? 0);
       setWinner(state.winners?.at(-1) ?? null);
