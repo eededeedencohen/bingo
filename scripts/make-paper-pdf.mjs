@@ -62,7 +62,7 @@ function boardHtml(board) {
         <div class="badge-size">${board.size}×${board.size}</div>
       </div>
     </div>
-    <div class="grid" style="grid-template-columns: repeat(${board.size}, 1fr);">${rows}</div>
+    <div class="grid" style="grid-template-columns: repeat(${board.size}, minmax(0, 1fr)); grid-template-rows: repeat(${board.size}, minmax(0, 1fr));">${rows}</div>
   </div>`;
 }
 
@@ -121,6 +121,8 @@ function docHtml(boards) {
     display: flex; align-items: center; justify-content: center; text-align: center;
     padding: 1.5mm; font-weight: 700; background: white;
     overflow: hidden;
+    /* Equal cells above all: a long answer wraps rather than widening its column. */
+    min-width: 0; min-height: 0; overflow-wrap: break-word;
   }
   .size-3 .cell { font-size: 6.5mm; }
   .size-4 .cell { font-size: 5mm; }

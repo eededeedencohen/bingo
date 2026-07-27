@@ -93,19 +93,51 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
     await call('close');
   };
 
+  /**
+   * The host hands out sheets in stacks, so the input takes ranges, not just
+   * single numbers: "101-110", "7", "3,5,9-12" — commas/spaces separate, and a
+   * dash (of any flavour) spans. Expansion happens here; the server just gets
+   * the flat id list it already knows how to validate.
+   */
+  const parseIds = (raw) => {
+    const ids = [];
+    const normalized = raw.replace(/\s*[-–—־]\s*/g, '-');
+    for (const token of normalized.split(/[,\s]+/)) {
+      if (!token) continue;
+      const range = token.match(/^(\d+)-(\d+)$/);
+      if (range) {
+        let [a, b] = [Number(range[1]), Number(range[2])];
+        if (a > b) [a, b] = [b, a];
+        if (b - a > 149) return null; // nonsense range — bigger than the whole set
+        for (let n = a; n <= b; n += 1) ids.push(String(n));
+      } else if (/^\d+$/.test(token)) {
+        ids.push(token);
+      } else {
+        return null; // anything unparseable rejects the whole input
+      }
+    }
+    return ids;
+  };
+
   const addPaper = async (event) => {
     event.preventDefault();
-    const id = paperInput.trim();
-    if (!id) return;
-    const data = await call('paper', 'POST', { id });
+    if (!paperInput.trim()) return;
+    const ids = parseIds(paperInput);
+    if (!ids || ids.length === 0) {
+      setPaperError({ code: 'admin.paperParseError' });
+      return;
+    }
+    const data = await call('paper', 'POST', { ids });
     if (data?.mismatched?.length) {
-      const bad = data.mismatched[0];
       setPaperError({
-        code: 'admin.paperSizeMismatch',
-        vars: { id: bad.id, size: bad.size, game: data.gameSize },
+        code: 'admin.paperSizeMismatchList',
+        vars: { ids: data.mismatched.map((m) => m.id).join(', '), game: data.gameSize },
       });
     } else if (data?.unknown?.length) {
-      setPaperError({ code: 'admin.paperInvalid' });
+      setPaperError({
+        code: 'admin.paperInvalidList',
+        vars: { ids: data.unknown.join(', ') },
+      });
     } else {
       setPaperError(null);
       setPaperInput('');
