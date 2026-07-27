@@ -4,7 +4,7 @@ import { Users, Wifi, WifiOff } from 'lucide-react';
 import { useI18n } from '../lib/i18n';
 import LanguageToggle from './LanguageToggle';
 
-export default function TopBar({ connected, online, status, playerName }) {
+export default function TopBar({ connected, online, status, playerName, hostMode = false }) {
   const { t } = useI18n();
 
   return (
@@ -16,11 +16,17 @@ export default function TopBar({ connected, online, status, playerName }) {
           <h1 className="truncate text-lg leading-tight font-extrabold tracking-tight sm:text-2xl">
             {t('app.title')} <span className="text-sk-purple-2">{t('app.titleAccent')}</span>
           </h1>
-          {playerName && (
-            <p className="truncate text-[11px] text-sk-gray sm:text-xs">
-              {/* bdi isolates a Latin name inside a Hebrew sentence */}
-              <bdi>{t('topbar.playingAs', { name: playerName })}</bdi>
+          {hostMode ? (
+            <p className="truncate text-[11px] font-semibold text-sk-purple-2 sm:text-xs">
+              {t('topbar.host')}
             </p>
+          ) : (
+            playerName && (
+              <p className="truncate text-[11px] text-sk-gray sm:text-xs">
+                {/* bdi isolates a Latin name inside a Hebrew sentence */}
+                <bdi>{t('topbar.playingAs', { name: playerName })}</bdi>
+              </p>
+            )
           )}
         </div>
       </div>

@@ -79,6 +79,7 @@ import {
   persistenceStats,
   recordAsk,
   recordClaim,
+  recordOpen,
   recordPaper,
   recordPlayer,
   recordStatus,
@@ -140,6 +141,14 @@ const players = new Map();
 const PAPER_BY_ID = new Map(PAPER_BOARDS.map((b) => [b.id, b]));
 const registeredPaper = new Set();
 
+/**
+ * The lobby gate. Nobody joins before the host: the game exists only between an
+ * explicit "open game" and "close game" from the admin panel. Boots closed;
+ * restore() reopens it if the host's round was open when the server died — a
+ * host refresh or a crash must never end a running game.
+ */
+let lobbyOpen = false;
+
 let restorePending = PERSISTENCE_ENABLED;
 
 /* ── Payload shaping ────────────────────────────────────────────────────────── */
@@ -170,6 +179,7 @@ const askedForClient = () =>
 function publicState() {
   return {
     status: game.status,
+    lobbyOpen,
     size: game.size,
     asked: askedForClient(),
     current: askedForClient().at(-1) ?? null,
@@ -259,9 +269,11 @@ function rosterPayload() {
   }
 
   rows.sort((a, b) => a.needs - b.needs || b.marked - a.marked);
+  let online = 0;
+  for (const player of players.values()) if (player.connected) online += 1;
   return {
     players: rows,
-    online: io.engine.clientsCount,
+    online, // joined players, matching the presence broadcast — not raw sockets
     total: players.size,
     paper: [...registeredPaper],
   };
@@ -273,7 +285,11 @@ function broadcastRoster() {
 }
 
 function broadcastPresence() {
-  io.emit('presence', { online: io.engine.clientsCount });
+  // Joined players, not raw sockets: the admin and people still on the join
+  // screen hold sockets too, and counting them as "online players" misleads.
+  let online = 0;
+  for (const player of players.values()) if (player.connected) online += 1;
+  io.emit('presence', { online });
   broadcastRoster();
 }
 
@@ -321,7 +337,7 @@ function askAndBroadcast() {
 
 function resetGame(size = game.size) {
   game = createGameState(size);
-  beginRound(size);
+  beginRound(size, lobbyOpen);
   recordPaper(registeredPaper); // carry the registered sheets into the new round
 
   for (const player of players.values()) {
@@ -379,6 +395,10 @@ io.on('connection', (socket) => {
   socket.on(
     'join',
     withAck((payload, reply) => {
+      // The host is always first: until the game is explicitly opened, nobody
+      // gets a card. (A refresh mid-round is unaffected — the lobby stays open.)
+      if (!lobbyOpen) return reply({ ok: false, reason: 'GAME_CLOSED' });
+
       const requestedId = typeof payload.playerId === 'string' ? payload.playerId : null;
       const existing = requestedId ? players.get(requestedId) : null;
 
@@ -638,7 +658,37 @@ admin.post('/resume', (_req, res) => {
   res.json({ ok: true, state: publicState() });
 });
 
-/** New round; the host may pick a board size (3, 4 or 5). */
+/**
+ * open — the host creates the game. Only from here on can players join.
+ * Deals a fresh round at the chosen size; idempotent if already open.
+ */
+admin.post('/open', (req, res) => {
+  const requested = Number(req.body?.size);
+  const size = BOARD_SIZES.includes(requested) ? requested : game.size;
+  if (!lobbyOpen) {
+    lobbyOpen = true;
+    resetGame(size);
+    recordOpen(true);
+    io.emit('lobby', { open: true });
+  }
+  res.json({ ok: true, state: publicState() });
+});
+
+/** close — the game ends. Joins are blocked until the host opens a new one. */
+admin.post('/close', (_req, res) => {
+  if (lobbyOpen) {
+    lobbyOpen = false;
+    game.status = 'finished';
+    recordStatus('finished', { finishedAt: new Date() });
+    recordOpen(false);
+    io.emit('game_status', { status: game.status });
+    io.emit('lobby', { open: false });
+    broadcastRoster();
+  }
+  res.json({ ok: true, state: publicState() });
+});
+
+/** New round mid-game; the host may pick a board size (3, 4 or 5). */
 admin.post('/reset', (req, res) => {
   const requested = Number(req.body?.size);
   const size = BOARD_SIZES.includes(requested) ? requested : game.size;
@@ -797,6 +847,11 @@ async function restore() {
     game.winners = snapshot.winners;
     game.startedAt = snapshot.startedAt ? new Date(snapshot.startedAt).getTime() : null;
     game.status = snapshot.asked.length > 0 ? 'paused' : 'idle';
+
+    // The host's open game survives a crash or a refresh — that is the whole
+    // reason the flag is persisted.
+    lobbyOpen = snapshot.open;
+    if (lobbyOpen) io.emit('lobby', { open: true });
 
     for (const id of snapshot.paperBoards) {
       if (PAPER_BY_ID.has(id)) registeredPaper.add(id);

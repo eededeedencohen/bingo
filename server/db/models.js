@@ -39,6 +39,9 @@ const roundSchema = new Schema(
     },
     // 3, 4 or 5 — chosen by the host when the round is created.
     size: { type: Number, enum: BOARD_SIZES, default: 5 },
+    // Is the lobby open? Players may join only while true. Persisted so a host
+    // refresh or a server restart never closes a running game by accident.
+    open: { type: Boolean, default: false },
     // IDs of printed boards the host registered for tracking this round.
     paperBoards: { type: [String], default: [] },
     // Hard-bounded by the size of the question bank, so the usual unbounded-array

@@ -62,14 +62,23 @@ const active = () => currentRoundId !== null;
  * Begin a round. The ObjectId is generated in-process so callers get a usable
  * roundId immediately; the insert itself is just another queued write.
  */
-export function beginRound(size = 5, startedAt = new Date()) {
+export function beginRound(size = 5, open = false, startedAt = new Date()) {
   currentRoundId = new Types.ObjectId();
   enqueue(pendingRoundOps, {
     filter: { _id: currentRoundId },
-    update: { $setOnInsert: { status: 'idle', size, asked: [], askedCount: 0, startedAt } },
+    update: { $setOnInsert: { status: 'idle', size, open, asked: [], askedCount: 0, startedAt } },
     upsert: true,
   });
   return String(currentRoundId);
+}
+
+/** The lobby gate — flipped by the host's open/close, must survive restarts. */
+export function recordOpen(open) {
+  if (!active()) return;
+  enqueue(pendingRoundOps, {
+    filter: { _id: currentRoundId },
+    update: { $set: { open } },
+  });
 }
 
 /** The host's registered printed-board IDs — replaced wholesale, tiny payload. */
@@ -328,6 +337,7 @@ export async function loadRestorableRound() {
   return {
     roundId: String(round._id),
     size: round.size ?? 5,
+    open: round.open === true,
     paperBoards: round.paperBoards ?? [],
     // A dropped batch leaves null holes in the positional array; filter them out
     // rather than letting a hole shift every later question's position.

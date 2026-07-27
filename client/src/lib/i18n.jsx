@@ -30,6 +30,10 @@ const DICTIONARY = {
     'join.namePlaceholder': 'e.g. Dana',
     'join.submit': 'Join the game',
     'join.connecting': 'Connecting…',
+    'join.closedTitle': "The game hasn't opened yet",
+    'join.closedSubtitle': 'Stay here — the moment the host opens the game, this screen comes alive.',
+
+    'topbar.host': 'Game host',
 
     'status.idle': 'Waiting',
     'status.running': 'Live',
@@ -71,6 +75,10 @@ const DICTIONARY = {
     'admin.next': 'Next question',
     'admin.pause': 'Pause',
     'admin.resume': 'Resume',
+    'admin.openTitle': 'Open a game — pick a board size',
+    'admin.closedNotice': 'The game is closed. Players cannot join until you open it.',
+    'admin.close': 'Close the game',
+    'admin.closeConfirm': 'Close the game? Players will be disconnected until you open a new one.',
     'admin.newRound': 'New round — board size',
     'admin.resetConfirm': 'Start a new {size}×{size} round? Everyone gets a fresh card.',
     'admin.paperTitle': 'Printed boards',
@@ -121,6 +129,10 @@ const DICTIONARY = {
     'join.namePlaceholder': 'לדוגמה: דנה',
     'join.submit': 'הצטרפות למשחק',
     'join.connecting': 'מתחבר…',
+    'join.closedTitle': 'המשחק עדיין לא נפתח',
+    'join.closedSubtitle': 'הישארו כאן — ברגע שהמנחה יפתח את המשחק, המסך יתעורר מעצמו.',
+
+    'topbar.host': 'מנחה המשחק',
 
     'status.idle': 'ממתין',
     'status.running': 'פעיל',
@@ -162,6 +174,10 @@ const DICTIONARY = {
     'admin.next': 'השאלה הבאה',
     'admin.pause': 'השהיה',
     'admin.resume': 'המשך',
+    'admin.openTitle': 'פתיחת משחק — בחרו גודל לוח',
+    'admin.closedNotice': 'המשחק סגור. שחקנים לא יכולים להצטרף עד שתפתחו אותו.',
+    'admin.close': 'סגירת המשחק',
+    'admin.closeConfirm': 'לסגור את המשחק? השחקנים ינותקו עד שתפתחו משחק חדש.',
     'admin.newRound': 'סבב חדש — גודל הלוח',
     'admin.resetConfirm': 'להתחיל סבב חדש {size}×{size}? כולם יקבלו כרטיס חדש.',
     'admin.paperTitle': 'לוחות מודפסים',

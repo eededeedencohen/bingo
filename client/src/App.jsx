@@ -22,20 +22,24 @@ import Toast from './components/Toast';
 const IS_ADMIN_PAGE = window.location.pathname.replace(/\/+$/, '') === '/admin';
 
 /**
- * Composition root. All socket state comes from `useBingoGame`; the /admin
- * variant additionally runs the auth flow before the game mounts.
+ * Composition root. All socket state comes from `useBingoGame`.
+ *
+ * Two very different experiences share it:
+ *  - players join, get a card, mark and claim;
+ *  - the HOST never joins and has no card — they run the game's lifecycle
+ *    (open → questions → close) and watch the roster.
  */
 export default function App() {
   const { t } = useI18n();
   const authState = useAdminAuth();
-  const isAdminPage = IS_ADMIN_PAGE || Boolean(authState.credential?.key);
+  const isAdmin = (IS_ADMIN_PAGE || Boolean(authState.credential?.key)) && authState.authorized;
 
-  // Only an authorized admin passes a credential into the game hook.
-  const adminCredential = isAdminPage && authState.authorized ? authState.credential : null;
+  const adminCredential = isAdmin ? authState.credential : null;
 
   const {
     connected,
     me,
+    lobbyOpen,
     marks,
     markedCount,
     asked,
@@ -54,7 +58,7 @@ export default function App() {
     claim,
     toggleMark,
     dismissWinner,
-  } = useBingoGame({ adminCredential });
+  } = useBingoGame({ adminCredential, spectator: Boolean(adminCredential) });
 
   const [joining, setJoining] = useState(false);
 
@@ -68,9 +72,52 @@ export default function App() {
     }
   }
 
+  /* ── Host view: no card, no claim — lifecycle, roster, and the question. ──── */
+  if (isAdmin) {
+    return (
+      <div className="mx-auto min-h-dvh w-full max-w-6xl px-3 py-4 sm:px-6 sm:py-8">
+        <TopBar connected={connected} online={online} status={status} hostMode />
+
+        <div className="grid gap-4 lg:grid-cols-2 lg:gap-5">
+          <section className="space-y-4">
+            <QuestionCard current={current} asked={asked.length} total={total} />
+            <AdminPanel
+              credential={adminCredential}
+              status={status}
+              lobbyOpen={lobbyOpen}
+              remaining={total - asked.length}
+            />
+            {adminCredential.token && (
+              <button
+                type="button"
+                onClick={authState.signOut}
+                className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                {t('login.signOut')}
+              </button>
+            )}
+          </section>
+
+          <section className="space-y-4 self-start">
+            <PlayerRoster roster={roster} />
+            <AskedList asked={asked} />
+          </section>
+        </div>
+
+        <AnimatePresence>
+          {winner && <WinOverlay winner={winner} isMe={false} onClose={dismissWinner} />}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  /* ── Player view ──────────────────────────────────────────────────────────── */
+
   if (!me) {
     return (
       <JoinScreen
+        lobbyOpen={lobbyOpen}
         connecting={joining && !connected}
         onJoin={(name) => {
           setJoining(true);
@@ -92,20 +139,10 @@ export default function App() {
        * (mirrored automatically under RTL).
        */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5">
-        {/* 1 — the current question, with the host's controls right under it. */}
         <section className="space-y-4 lg:col-start-2 lg:row-start-1">
           <QuestionCard current={current} asked={asked.length} total={total} />
-
-          {adminCredential && (
-            <AdminPanel
-              credential={adminCredential}
-              status={status}
-              remaining={total - asked.length}
-            />
-          )}
         </section>
 
-        {/* 2 — the card and the claim button: the player's whole game. */}
         <section className="space-y-4 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <BingoBoard
             board={me.board}
@@ -123,21 +160,7 @@ export default function App() {
           />
         </section>
 
-        {/* 3 — reference material: roster for the host, history for everyone. */}
         <section className="space-y-4 self-start lg:col-start-2 lg:row-start-2">
-          {adminCredential && <PlayerRoster roster={roster} />}
-
-          {adminCredential?.token && (
-            <button
-              type="button"
-              onClick={authState.signOut}
-              className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              {t('login.signOut')}
-            </button>
-          )}
-
           <AskedList asked={asked} />
         </section>
       </div>

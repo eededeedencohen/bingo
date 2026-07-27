@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Eye, EyeOff, Pause, Play, Plus, Printer, SkipForward, X } from 'lucide-react';
+import { DoorClosed, DoorOpen, Eye, EyeOff, Pause, Play, Plus, Printer, SkipForward, X } from 'lucide-react';
 
 import { SERVER_URL } from '../lib/socket';
 import { useI18n } from '../lib/i18n';
@@ -12,7 +12,7 @@ import { useI18n } from '../lib/i18n';
  * There is no timer anywhere: a question is revealed if and only if the host
  * presses the button.
  */
-export default function AdminPanel({ credential, status, remaining }) {
+export default function AdminPanel({ credential, status, lobbyOpen, remaining }) {
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState(null);
   const [denied, setDenied] = useState(false);
@@ -72,6 +72,13 @@ export default function AdminPanel({ credential, status, remaining }) {
     await call('reset', 'POST', { size });
   };
 
+  const openGame = (size) => call('open', 'POST', { size });
+
+  const closeGame = async () => {
+    if (!window.confirm(t('admin.closeConfirm'))) return;
+    await call('close');
+  };
+
   const addPaper = async (event) => {
     event.preventDefault();
     const id = paperInput.trim();
@@ -88,6 +95,46 @@ export default function AdminPanel({ credential, status, remaining }) {
   };
 
   const exhausted = remaining === 0;
+
+  /* Closed lobby: the ONLY action is opening a game (at a chosen size). */
+  if (lobbyOpen === false) {
+    return (
+      <div className="glass p-4">
+        <p className="mb-3 flex items-center gap-1.5 text-xs font-semibold tracking-widest text-sk-gray uppercase">
+          <DoorClosed className="h-3.5 w-3.5" />
+          {t('admin.controls')}
+        </p>
+
+        <p className="mb-3 rounded-xl bg-sk-teal-soft/60 p-3 text-sm text-sk-ink ring-1 ring-sk-teal-2/30">
+          {t('admin.closedNotice')}
+        </p>
+
+        <p className="mb-2 text-[10px] font-semibold tracking-widest text-sk-gray uppercase">
+          {t('admin.openTitle')}
+        </p>
+        <div className="grid grid-cols-3 gap-2">
+          {[3, 4, 5].map((size) => (
+            <motion.button
+              key={size}
+              type="button"
+              onClick={() => openGame(size)}
+              disabled={busy !== null}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              className="flex flex-col items-center gap-1 rounded-2xl bg-gradient-to-br from-sk-teal-2 to-sk-purple py-3.5 font-bold text-white shadow-lg shadow-sk-purple/30 disabled:opacity-50"
+            >
+              <DoorOpen className="h-5 w-5" />
+              <span dir="ltr">{size}×{size}</span>
+            </motion.button>
+          ))}
+        </div>
+
+        {denied && (
+          <p className="mt-3 text-xs font-semibold text-rose-600">{t('admin.unauthorized')}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="glass p-4">
@@ -192,6 +239,17 @@ export default function AdminPanel({ credential, status, remaining }) {
         </div>
       )}
       <p className="mt-2 text-[11px] leading-snug text-sk-gray">{t('admin.paperHint')}</p>
+
+      {/* Ending the event is deliberate and rare — quiet styling, loud confirm. */}
+      <button
+        type="button"
+        onClick={closeGame}
+        disabled={busy !== null}
+        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 py-2.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-50"
+      >
+        <DoorClosed className="h-4 w-4" />
+        {t('admin.close')}
+      </button>
 
       {denied && (
         <p className="mt-3 text-xs font-semibold text-rose-600">{t('admin.unauthorized')}</p>

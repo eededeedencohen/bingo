@@ -24,13 +24,17 @@ const KNOWN_CLAIM_ERRORS = new Set([
  * Marks are authoritative on the server. Tapping a cell updates local state
  * optimistically for instant feedback, then reconciles with whatever the server
  * acks — so a dropped packet can never leave the card out of sync.
+ *
+ * `spectator` (the host): never joins, never gets a card — the game lifecycle
+ * is theirs to run, not to play. State arrives via request_state + broadcasts.
  */
-export function useBingoGame({ adminCredential } = {}) {
+export function useBingoGame({ adminCredential, spectator = false } = {}) {
   const [connected, setConnected] = useState(socket.connected);
   const [me, setMe] = useState(null); // { playerId, name, board }
   const [marks, setMarks] = useState(() => new Set());
   const [asked, setAsked] = useState([]); // [{ index, he, en }] in reveal order
   const [status, setStatus] = useState('idle');
+  const [lobbyOpen, setLobbyOpen] = useState(null); // null = not yet known
   const [total, setTotal] = useState(0);
   const [online, setOnline] = useState(0);
   const [winner, setWinner] = useState(null);
@@ -41,10 +45,13 @@ export function useBingoGame({ adminCredential } = {}) {
   const nameRef = useRef(localStorage.getItem(PLAYER_NAME_KEY) ?? '');
   const adminCredentialRef = useRef(adminCredential);
   adminCredentialRef.current = adminCredential;
+  const spectatorRef = useRef(spectator);
+  spectatorRef.current = spectator;
 
   const applyState = useCallback((state) => {
     if (!state) return;
     setStatus(state.status);
+    setLobbyOpen(state.lobbyOpen ?? null);
     setAsked(state.asked ?? []);
     setTotal(state.total ?? 0);
     setWinner(state.winners?.at(-1) ?? null);
@@ -52,12 +59,17 @@ export function useBingoGame({ adminCredential } = {}) {
 
   /** Ask for a seat. Re-sends our playerId so a refresh keeps the same card. */
   const emitJoin = useCallback(() => {
-    if (!nameRef.current) return;
+    if (!nameRef.current || spectatorRef.current) return;
     socket.emit(
       'join',
       { name: nameRef.current, playerId: localStorage.getItem(PLAYER_ID_KEY) },
       (res) => {
-        if (!res?.ok) return;
+        if (!res?.ok) {
+          // The host hasn't opened the game (or just closed it): wait on the
+          // lobby event rather than surfacing an error.
+          if (res?.reason === 'GAME_CLOSED') setLobbyOpen(false);
+          return;
+        }
         localStorage.setItem(PLAYER_ID_KEY, res.player.playerId);
         localStorage.setItem(PLAYER_NAME_KEY, res.player.name);
         setMe(res.player);
@@ -67,10 +79,21 @@ export function useBingoGame({ adminCredential } = {}) {
     );
   }, [applyState]);
 
+  // The socket connects on mount for everyone — before joining, a visitor needs
+  // to hear the lobby open, and a refreshed player needs their seat back
+  // without pressing anything.
+  useEffect(() => {
+    if (!socket.connected) socket.connect();
+  }, []);
+
   useEffect(() => {
     const onConnect = () => {
       setConnected(true);
-      emitJoin(); // also covers automatic reconnects
+      // Seed state first (lobby gate, asked list); the join races it harmlessly.
+      socket.emit('request_state', null, (res) => {
+        if (res?.ok) applyState(res.state);
+      });
+      emitJoin(); // no-op for spectators and for visitors with no stored name
       // Re-authenticate the admin channel: room membership dies with the socket.
       if (adminCredentialRef.current) {
         socket.emit('admin_auth', adminCredentialRef.current, (res) => {
@@ -79,6 +102,16 @@ export function useBingoGame({ adminCredential } = {}) {
       }
     };
     const onDisconnect = () => setConnected(false);
+
+    const onLobby = ({ open }) => {
+      setLobbyOpen(open);
+      if (open) emitJoin(); // auto-(re)join the moment the host opens
+      else {
+        // Game closed: back to the gate. The server keeps nothing joinable.
+        setMe(null);
+        setMarks(new Set());
+      }
+    };
 
     const onQuestion = (payload) => {
       // `index` is monotonic, so a duplicate around a reconnect is a no-op.
@@ -105,6 +138,7 @@ export function useBingoGame({ adminCredential } = {}) {
 
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
+    socket.on('lobby', onLobby);
     socket.on('next_question', onQuestion);
     socket.on('new_board', onNewBoard);
     socket.on('game_status', onGameStatus);
@@ -117,6 +151,7 @@ export function useBingoGame({ adminCredential } = {}) {
     return () => {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
+      socket.off('lobby', onLobby);
       socket.off('next_question', onQuestion);
       socket.off('new_board', onNewBoard);
       socket.off('game_status', onGameStatus);
@@ -206,6 +241,7 @@ export function useBingoGame({ adminCredential } = {}) {
   return {
     connected,
     me,
+    lobbyOpen,
     boardSize,
     // What "fully marked" means depends on the free centre existing.
     markedCount: marks.size + (boardSize % 2 === 1 ? 1 : 0),

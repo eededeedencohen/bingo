@@ -1,12 +1,18 @@
 import { useState } from 'react';
-import { motion } from 'motion/react';
-import { ArrowRight } from 'lucide-react';
+import { AnimatePresence, motion } from 'motion/react';
+import { ArrowRight, Hourglass } from 'lucide-react';
 
 import { useI18n } from '../lib/i18n';
 import LanguageToggle from './LanguageToggle';
 
-/** Name gate. Nothing connects to the socket until the player commits. */
-export default function JoinScreen({ onJoin, connecting }) {
+/**
+ * The gate. Two states:
+ *  - lobby closed — the host hasn't opened a game yet: a waiting card. The
+ *    socket is already listening, so the form appears by itself on open.
+ *  - lobby open — name form; a returning player is auto-joined by the hook and
+ *    never even sees this.
+ */
+export default function JoinScreen({ onJoin, connecting, lobbyOpen }) {
   const { t, isRtl } = useI18n();
   const [name, setName] = useState(localStorage.getItem('bingo:playerName') ?? '');
 
@@ -14,6 +20,8 @@ export default function JoinScreen({ onJoin, connecting }) {
     event.preventDefault();
     onJoin(name);
   };
+
+  const closed = lobbyOpen === false;
 
   return (
     <div className="flex min-h-dvh items-center justify-center p-4">
@@ -40,9 +48,54 @@ export default function JoinScreen({ onJoin, connecting }) {
         <h1 className="text-center text-3xl font-extrabold tracking-tight">
           {t('app.title')} <span className="text-sk-purple-2">{t('app.titleAccent')}</span>
         </h1>
-        <p className="mt-2 text-center text-sm text-sk-gray">{t('join.subtitle')}</p>
 
-        <label
+        <AnimatePresence mode="wait">
+          {closed ? (
+            <motion.div
+              key="closed"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="mt-6 rounded-2xl bg-sk-teal-soft/60 p-5 text-center ring-1 ring-sk-teal-2/30"
+            >
+              <motion.div
+                animate={{ rotate: [0, 180, 180, 360] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white shadow-sm"
+              >
+                <Hourglass className="h-5 w-5 text-sk-teal-3" />
+              </motion.div>
+              <p className="font-bold text-sk-ink">{t('join.closedTitle')}</p>
+              <p className="mt-1 text-sm text-sk-gray">{t('join.closedSubtitle')}</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="open"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+            >
+              <JoinForm
+                t={t}
+                isRtl={isRtl}
+                name={name}
+                setName={setName}
+                connecting={connecting}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.form>
+    </div>
+  );
+}
+
+function JoinForm({ t, isRtl, name, setName, connecting }) {
+  return (
+    <>
+      <p className="mt-2 text-center text-sm text-sk-gray">{t('join.subtitle')}</p>
+
+      <label
           htmlFor="name"
           className="mt-8 mb-2 block text-xs font-semibold tracking-widest text-sk-gray uppercase"
         >
@@ -69,7 +122,6 @@ export default function JoinScreen({ onJoin, connecting }) {
           {/* The arrow points at the reading direction, so it mirrors in Hebrew. */}
           <ArrowRight className={`h-5 w-5 ${isRtl ? 'rotate-180' : ''}`} />
         </motion.button>
-      </motion.form>
-    </div>
+    </>
   );
 }
