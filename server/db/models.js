@@ -42,6 +42,10 @@ const roundSchema = new Schema(
     // Is the lobby open? Players may join only while true. Persisted so a host
     // refresh or a server restart never closes a running game by accident.
     open: { type: Boolean, default: false },
+    // Changes ONLY when the host opens a game. Clients compare it against the
+    // identity they stored: a stale gameId means "that game is over — enter
+    // your name again", even for players who were offline when it closed.
+    gameId: String,
     // IDs of printed boards the host registered for tracking this round.
     paperBoards: { type: [String], default: [] },
     // Hard-bounded by the size of the question bank, so the usual unbounded-array

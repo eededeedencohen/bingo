@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ArrowRight, Hourglass } from 'lucide-react';
 
@@ -15,6 +15,12 @@ import LanguageToggle from './LanguageToggle';
 export default function JoinScreen({ onJoin, connecting, lobbyOpen }) {
   const { t, isRtl } = useI18n();
   const [name, setName] = useState(localStorage.getItem('bingo:playerName') ?? '');
+
+  // A closed game forgets everyone: whatever was typed (or remembered from a
+  // previous game) is gone when the next one opens.
+  useEffect(() => {
+    if (lobbyOpen === false) setName('');
+  }, [lobbyOpen]);
 
   const submit = (event) => {
     event.preventDefault();

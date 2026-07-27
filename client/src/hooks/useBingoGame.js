@@ -5,6 +5,7 @@ import { cellKey, cellKeySet, findMarkedLines, isFreeCell } from '../lib/bingo';
 
 const PLAYER_ID_KEY = 'bingo:playerId';
 const PLAYER_NAME_KEY = 'bingo:playerName';
+const GAME_ID_KEY = 'bingo:gameId';
 
 /**
  * The server speaks in codes, never in prose — it stays language-agnostic and
@@ -48,14 +49,34 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
   const spectatorRef = useRef(spectator);
   spectatorRef.current = spectator;
 
-  const applyState = useCallback((state) => {
-    if (!state) return;
-    setStatus(state.status);
-    setLobbyOpen(state.lobbyOpen ?? null);
-    setAsked(state.asked ?? []);
-    setTotal(state.total ?? 0);
-    setWinner(state.winners?.at(-1) ?? null);
+  /**
+   * A stored identity belongs to ONE game. When the server's gameId differs
+   * from the one we joined under, that game is over: forget the name and the
+   * card, and let the player introduce themselves afresh. (Refreshes and
+   * reconnects inside the same game keep everything — the id matches.)
+   */
+  const syncIdentity = useCallback((serverGameId) => {
+    if (!serverGameId) return;
+    if (localStorage.getItem(GAME_ID_KEY) === serverGameId) return;
+    localStorage.removeItem(PLAYER_ID_KEY);
+    localStorage.removeItem(PLAYER_NAME_KEY);
+    nameRef.current = '';
+    setMe(null);
+    setMarks(new Set());
   }, []);
+
+  const applyState = useCallback(
+    (state) => {
+      if (!state) return;
+      syncIdentity(state.gameId);
+      setStatus(state.status);
+      setLobbyOpen(state.lobbyOpen ?? null);
+      setAsked(state.asked ?? []);
+      setTotal(state.total ?? 0);
+      setWinner(state.winners?.at(-1) ?? null);
+    },
+    [syncIdentity],
+  );
 
   /** Ask for a seat. Re-sends our playerId so a refresh keeps the same card. */
   const emitJoin = useCallback(() => {
@@ -72,6 +93,8 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
         }
         localStorage.setItem(PLAYER_ID_KEY, res.player.playerId);
         localStorage.setItem(PLAYER_NAME_KEY, res.player.name);
+        // Bind this identity to the game it was created in.
+        if (res.state?.gameId) localStorage.setItem(GAME_ID_KEY, res.state.gameId);
         setMe(res.player);
         setMarks(new Set(res.player.marks ?? []));
         applyState(res.state);
@@ -89,11 +112,12 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
   useEffect(() => {
     const onConnect = () => {
       setConnected(true);
-      // Seed state first (lobby gate, asked list); the join races it harmlessly.
+      // Seed state FIRST, then join: applyState runs the gameId identity check,
+      // so a stale name can never sneak into a new game.
       socket.emit('request_state', null, (res) => {
         if (res?.ok) applyState(res.state);
+        emitJoin(); // no-op for spectators and for visitors with no stored name
       });
-      emitJoin(); // no-op for spectators and for visitors with no stored name
       // Re-authenticate the admin channel: room membership dies with the socket.
       if (adminCredentialRef.current) {
         socket.emit('admin_auth', adminCredentialRef.current, (res) => {
@@ -103,11 +127,17 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
     };
     const onDisconnect = () => setConnected(false);
 
-    const onLobby = ({ open }) => {
+    const onLobby = ({ open, gameId }) => {
       setLobbyOpen(open);
-      if (open) emitJoin(); // auto-(re)join the moment the host opens
-      else {
-        // Game closed: back to the gate. The server keeps nothing joinable.
+      if (open) {
+        syncIdentity(gameId); // a new game wipes yesterday's name
+        emitJoin(); // auto-(re)join only if an identity survived the check
+      } else {
+        // Game closed: full reset. Nothing about this player carries over.
+        localStorage.removeItem(PLAYER_ID_KEY);
+        localStorage.removeItem(PLAYER_NAME_KEY);
+        localStorage.removeItem(GAME_ID_KEY);
+        nameRef.current = '';
         setMe(null);
         setMarks(new Set());
       }
@@ -161,7 +191,7 @@ export function useBingoGame({ adminCredential, spectator = false } = {}) {
       socket.off('game_reset', onReset);
       socket.off('roster', onRoster);
     };
-  }, [applyState, emitJoin]);
+  }, [applyState, emitJoin, syncIdentity]);
 
   // Logging in AFTER the socket is already up (the /admin flow) must also join
   // the admin room — the connect handler above only covers fresh connections.

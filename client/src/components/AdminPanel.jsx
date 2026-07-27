@@ -44,12 +44,13 @@ export default function AdminPanel({ credential, status, lobbyOpen, remaining })
     [credential],
   );
 
-  // The registered printed boards survive refreshes server-side; load them once.
+  // The registered printed boards live server-side; reload whenever the game
+  // opens or closes — closing wipes them there, and the chips must follow.
   useEffect(() => {
     call('paper', 'GET').then((data) => {
       if (data?.registered) setPaper(data.registered);
     });
-  }, [call]);
+  }, [call, lobbyOpen]);
 
   const loadAnswers = useCallback(async () => {
     const data = await call('answers', 'GET');

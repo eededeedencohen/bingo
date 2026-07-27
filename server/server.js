@@ -149,6 +149,14 @@ const registeredPaper = new Set();
  */
 let lobbyOpen = false;
 
+/**
+ * Rotates ONLY when the host opens a game. Clients store it next to their
+ * playerId/name; a mismatch tells them "that game is over — enter your name
+ * again", which is what makes close+open a genuinely clean slate even for
+ * players who were offline at the moment of closing.
+ */
+let gameId = randomUUID();
+
 let restorePending = PERSISTENCE_ENABLED;
 
 /* ── Payload shaping ────────────────────────────────────────────────────────── */
@@ -180,6 +188,7 @@ function publicState() {
   return {
     status: game.status,
     lobbyOpen,
+    gameId,
     size: game.size,
     asked: askedForClient(),
     current: askedForClient().at(-1) ?? null,
@@ -337,7 +346,7 @@ function askAndBroadcast() {
 
 function resetGame(size = game.size) {
   game = createGameState(size);
-  beginRound(size, lobbyOpen);
+  beginRound(size, lobbyOpen, gameId);
   recordPaper(registeredPaper); // carry the registered sheets into the new round
 
   for (const player of players.values()) {
@@ -667,23 +676,29 @@ admin.post('/open', (req, res) => {
   const size = BOARD_SIZES.includes(requested) ? requested : game.size;
   if (!lobbyOpen) {
     lobbyOpen = true;
+    gameId = randomUUID(); // a NEW game: every stored player identity goes stale
     resetGame(size);
     recordOpen(true);
-    io.emit('lobby', { open: true });
+    io.emit('lobby', { open: true, gameId });
   }
   res.json({ ok: true, state: publicState() });
 });
 
-/** close — the game ends. Joins are blocked until the host opens a new one. */
+/**
+ * close — the game ends, and it is a FULL reset: no player list, no history,
+ * no registered paper boards. What opens next is a brand-new game.
+ */
 admin.post('/close', (_req, res) => {
   if (lobbyOpen) {
     lobbyOpen = false;
-    game.status = 'finished';
     recordStatus('finished', { finishedAt: new Date() });
-    recordOpen(false);
-    io.emit('game_status', { status: game.status });
-    io.emit('lobby', { open: false });
-    broadcastRoster();
+
+    players.clear();
+    registeredPaper.clear();
+    resetGame(game.size); // fresh empty state; records open:false and paper:[]
+
+    io.emit('lobby', { open: false, gameId });
+    broadcastPresence(); // roster + presence now both read as empty
   }
   res.json({ ok: true, state: publicState() });
 });
@@ -849,9 +864,11 @@ async function restore() {
     game.status = snapshot.asked.length > 0 ? 'paused' : 'idle';
 
     // The host's open game survives a crash or a refresh — that is the whole
-    // reason the flag is persisted.
+    // reason the flag is persisted. The gameId comes back too, so players'
+    // stored identities stay valid across the restart.
     lobbyOpen = snapshot.open;
-    if (lobbyOpen) io.emit('lobby', { open: true });
+    if (snapshot.gameId) gameId = snapshot.gameId;
+    if (lobbyOpen) io.emit('lobby', { open: true, gameId });
 
     for (const id of snapshot.paperBoards) {
       if (PAPER_BY_ID.has(id)) registeredPaper.add(id);
