@@ -66,6 +66,7 @@ import {
   QUESTIONS,
   verifyClaim,
 } from './game.js';
+import { login, logout, validateToken } from './auth.js';
 import { closeMongo, connectMongo, dbState } from './db/mongo.js';
 import {
   abandonStaleRounds,
@@ -403,13 +404,15 @@ io.on('connection', (socket) => {
   );
 
   /**
-   * admin_auth — the only way onto the admin channel. The REST key guarded
-   * /api/admin/* but there was no socket equivalent, and the roster needs one.
+   * admin_auth — the only way onto the admin channel. Accepts either the raw
+   * ADMIN_KEY (legacy ?admin= URLs, tooling) or a session token from the
+   * username/password login at /admin.
    */
   socket.on(
     'admin_auth',
     withAck((payload, reply) => {
-      if (payload.key !== ADMIN_KEY) {
+      const authorized = payload.key === ADMIN_KEY || validateToken(payload.token);
+      if (!authorized) {
         socket.leave(ADMIN_ROOM);
         socket.data.isAdmin = false;
         return reply({ ok: false, reason: 'UNAUTHORIZED' });
@@ -524,9 +527,33 @@ io.on('connection', (socket) => {
 /* ── Admin REST API ─────────────────────────────────────────────────────────── */
 
 function requireAdmin(req, res, next) {
-  if (req.get('x-admin-key') !== ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' });
+  const keyOk = req.get('x-admin-key') === ADMIN_KEY;
+  const tokenOk = validateToken(req.get('x-admin-token'));
+  if (!keyOk && !tokenOk) return res.status(401).json({ error: 'Unauthorized' });
   return next();
 }
+
+/* ── Auth API (username/password -> session token) ─────────────────────────── */
+
+const auth = express.Router();
+
+auth.post('/login', (req, res) => {
+  const { username, password } = req.body ?? {};
+  const result = login(username, password, req.ip);
+  // 429 for LOCKED so the client can say "wait", 401 for everything else.
+  if (!result.ok) return res.status(result.reason === 'LOCKED' ? 429 : 401).json(result);
+  return res.json(result);
+});
+
+auth.post('/logout', (req, res) => {
+  logout(req.get('x-admin-token'));
+  res.json({ ok: true });
+});
+
+/** Lets the client check a stored token before showing the admin UI. */
+auth.get('/session', (req, res) => res.json({ ok: validateToken(req.get('x-admin-token')) }));
+
+app.use('/api/auth', auth);
 
 const admin = express.Router();
 admin.use(requireAdmin);

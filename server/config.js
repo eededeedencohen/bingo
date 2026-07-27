@@ -14,7 +14,19 @@ const bool = (value, fallback) => (value === undefined ? fallback : value === 't
 export const IS_PROD = process.env.NODE_ENV === 'production';
 
 export const PORT = Number(process.env.PORT ?? 4000);
+
+/**
+ * ADMIN_KEY is the machine credential — it stays valid for curl and tooling.
+ * Humans log in at /admin with ADMIN_USER + ADMIN_PASSWORD and get a session
+ * token instead, so the secret never sits in a URL or in browser history.
+ */
 export const ADMIN_KEY = process.env.ADMIN_KEY ?? 'dev-admin-key';
+export const ADMIN_USER = process.env.ADMIN_USER ?? '';
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? '';
+export const ADMIN_LOGIN_ENABLED = Boolean(ADMIN_USER && ADMIN_PASSWORD);
+
+/** How long a browser session stays signed in. */
+export const ADMIN_SESSION_TTL_MS = Number(process.env.ADMIN_SESSION_TTL_MS ?? 8 * 60 * 60 * 1000);
 export const STOP_ON_WIN = bool(process.env.STOP_ON_WIN, true);
 
 /**

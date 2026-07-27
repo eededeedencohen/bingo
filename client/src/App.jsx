@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { AnimatePresence } from 'motion/react';
+import { LogOut } from 'lucide-react';
 
 import { useBingoGame } from './hooks/useBingoGame';
+import { useAdminAuth } from './hooks/useAdminAuth';
+import { useI18n } from './lib/i18n';
 import TopBar from './components/TopBar';
 import BingoBoard from './components/BingoBoard';
 import QuestionCard from './components/QuestionCard';
@@ -9,17 +12,26 @@ import AskedList from './components/AskedList';
 import ClaimButton from './components/ClaimButton';
 import WinOverlay from './components/WinOverlay';
 import JoinScreen from './components/JoinScreen';
+import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 import PlayerRoster from './components/PlayerRoster';
 import Toast from './components/Toast';
 
+// The host page lives at /admin (username/password). ?admin=<key> keeps working
+// anywhere as the legacy machine credential.
+const IS_ADMIN_PAGE = window.location.pathname.replace(/\/+$/, '') === '/admin';
+
 /**
- * Composition root. All socket state comes from `useBingoGame`, so everything
- * below is presentational and easy to rearrange.
+ * Composition root. All socket state comes from `useBingoGame`; the /admin
+ * variant additionally runs the auth flow before the game mounts.
  */
 export default function App() {
-  // Host controls appear only for ?admin=<ADMIN_KEY>.
-  const adminKey = useMemo(() => new URLSearchParams(window.location.search).get('admin'), []);
+  const { t } = useI18n();
+  const authState = useAdminAuth();
+  const isAdminPage = IS_ADMIN_PAGE || Boolean(authState.credential?.key);
+
+  // Only an authorized admin passes a credential into the game hook.
+  const adminCredential = isAdminPage && authState.authorized ? authState.credential : null;
 
   const {
     connected,
@@ -41,9 +53,19 @@ export default function App() {
     claim,
     toggleMark,
     dismissWinner,
-  } = useBingoGame({ adminKey });
+  } = useBingoGame({ adminCredential });
 
   const [joining, setJoining] = useState(false);
+
+  // /admin gate: wait for the token check, then demand a login.
+  if (IS_ADMIN_PAGE && !authState.credential?.key) {
+    if (authState.authorized === null) return null; // token check in flight (<100ms)
+    if (!authState.authorized) {
+      return (
+        <AdminLogin onLogin={authState.loginWith} busy={authState.busy} error={authState.error} />
+      );
+    }
+  }
 
   if (!me) {
     return (
@@ -83,14 +105,26 @@ export default function App() {
         <aside className="order-1 space-y-4 lg:order-2">
           <QuestionCard current={current} asked={asked.length} total={total} />
 
-          {adminKey && (
-            <AdminPanel
-              adminKey={adminKey}
-              status={status}
-              remaining={total - asked.length}
-            />
+          {adminCredential && (
+            <>
+              <AdminPanel
+                credential={adminCredential}
+                status={status}
+                remaining={total - asked.length}
+              />
+              <PlayerRoster roster={roster} />
+              {adminCredential.token && (
+                <button
+                  type="button"
+                  onClick={authState.signOut}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-white/5 hover:text-slate-300"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  {t('login.signOut')}
+                </button>
+              )}
+            </>
           )}
-          {adminKey && <PlayerRoster roster={roster} />}
 
           <AskedList asked={asked} />
         </aside>

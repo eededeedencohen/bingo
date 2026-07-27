@@ -89,6 +89,18 @@ const DICTIONARY = {
     'roster.claims': 'Claims',
 
     'lang.switch': 'Language',
+
+    'login.title': 'Host sign-in',
+    'login.subtitle': 'This page is for whoever runs the game.',
+    'login.username': 'Username',
+    'login.password': 'Password',
+    'login.submit': 'Sign in',
+    'login.checking': 'Checking…',
+    'login.signOut': 'Sign out',
+    'login.BAD_CREDENTIALS': 'Wrong username or password.',
+    'login.LOCKED': 'Too many attempts — try again in a few minutes.',
+    'login.LOGIN_DISABLED': 'Login is not configured on this server.',
+    'login.NETWORK': 'Could not reach the server.',
   },
 
   he: {
@@ -160,6 +172,18 @@ const DICTIONARY = {
     'roster.claims': 'הכרזות',
 
     'lang.switch': 'שפה',
+
+    'login.title': 'כניסת מנחה',
+    'login.subtitle': 'העמוד הזה מיועד למי שמנהל את המשחק.',
+    'login.username': 'שם משתמש',
+    'login.password': 'סיסמה',
+    'login.submit': 'כניסה',
+    'login.checking': 'בודק…',
+    'login.signOut': 'התנתקות',
+    'login.BAD_CREDENTIALS': 'שם משתמש או סיסמה שגויים.',
+    'login.LOCKED': 'יותר מדי ניסיונות — נסו שוב בעוד כמה דקות.',
+    'login.LOGIN_DISABLED': 'ההתחברות לא מוגדרת בשרת הזה.',
+    'login.NETWORK': 'אין חיבור לשרת.',
   },
 };
 

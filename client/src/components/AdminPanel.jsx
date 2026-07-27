@@ -15,7 +15,7 @@ import { useI18n } from '../lib/i18n';
  * Dev-grade on purpose — for anything public this belongs behind a real login
  * rather than a URL parameter.
  */
-export default function AdminPanel({ adminKey, status, remaining }) {
+export default function AdminPanel({ credential, status, remaining }) {
   const { t, lang } = useI18n();
   const [busy, setBusy] = useState(null);
   const [denied, setDenied] = useState(false);
@@ -26,17 +26,17 @@ export default function AdminPanel({ adminKey, status, remaining }) {
     async (path, method = 'POST') => {
       setBusy(path);
       try {
-        const response = await fetch(`${SERVER_URL}/api/admin/${path}`, {
-          method,
-          headers: { 'x-admin-key': adminKey },
-        });
+        const headers = credential?.token
+          ? { 'x-admin-token': credential.token }
+          : { 'x-admin-key': credential?.key ?? '' };
+        const response = await fetch(`${SERVER_URL}/api/admin/${path}`, { method, headers });
         setDenied(response.status === 401);
         return response.ok ? response.json() : null;
       } finally {
         setBusy(null);
       }
     },
-    [adminKey],
+    [credential],
   );
 
   const loadAnswers = useCallback(async () => {

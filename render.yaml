@@ -22,6 +22,11 @@ services:
       # Gates the answer key, the roster and the audit trail. Generate a strong one.
       - key: ADMIN_KEY
         generateValue: true
+      # Human login for the /admin page. Set both in the dashboard.
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
       - key: STOP_ON_WIN
         value: 'true'
       - key: STRICT_MARKS

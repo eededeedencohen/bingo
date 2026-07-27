@@ -25,7 +25,7 @@ const KNOWN_CLAIM_ERRORS = new Set([
  * optimistically for instant feedback, then reconciles with whatever the server
  * acks — so a dropped packet can never leave the card out of sync.
  */
-export function useBingoGame({ adminKey } = {}) {
+export function useBingoGame({ adminCredential } = {}) {
   const [connected, setConnected] = useState(socket.connected);
   const [me, setMe] = useState(null); // { playerId, name, board }
   const [marks, setMarks] = useState(() => new Set());
@@ -39,8 +39,8 @@ export function useBingoGame({ adminKey } = {}) {
   const [roster, setRoster] = useState(null);
 
   const nameRef = useRef(localStorage.getItem(PLAYER_NAME_KEY) ?? '');
-  const adminKeyRef = useRef(adminKey);
-  adminKeyRef.current = adminKey;
+  const adminCredentialRef = useRef(adminCredential);
+  adminCredentialRef.current = adminCredential;
 
   const applyState = useCallback((state) => {
     if (!state) return;
@@ -72,8 +72,8 @@ export function useBingoGame({ adminKey } = {}) {
       setConnected(true);
       emitJoin(); // also covers automatic reconnects
       // Re-authenticate the admin channel: room membership dies with the socket.
-      if (adminKeyRef.current) {
-        socket.emit('admin_auth', { key: adminKeyRef.current }, (res) => {
+      if (adminCredentialRef.current) {
+        socket.emit('admin_auth', adminCredentialRef.current, (res) => {
           if (res?.ok) setRoster(res.roster);
         });
       }
@@ -127,6 +127,15 @@ export function useBingoGame({ adminKey } = {}) {
       socket.off('roster', onRoster);
     };
   }, [applyState, emitJoin]);
+
+  // Logging in AFTER the socket is already up (the /admin flow) must also join
+  // the admin room — the connect handler above only covers fresh connections.
+  useEffect(() => {
+    if (!adminCredential || !socket.connected) return;
+    socket.emit('admin_auth', adminCredential, (res) => {
+      if (res?.ok) setRoster(res.roster);
+    });
+  }, [adminCredential]);
 
   // Toasts clear themselves.
   useEffect(() => {
