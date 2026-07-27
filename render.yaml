@@ -14,6 +14,11 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # The custom domain(s) the browser arrives from. The onrender.com origin
+      # is trusted automatically via RENDER_EXTERNAL_URL; anything else must be
+      # listed here or the page loads but the socket is refused (CORS 400).
+      - key: CLIENT_ORIGIN
+        value: https://www.bingo.shekel-pnai.org,https://bingo.shekel-pnai.org
       # Never guessed: paste your Atlas URI (keep the literal <PASSWORD> token).
       - key: DATABASE
         sync: false
@@ -33,5 +38,3 @@ services:
         value: 'true'
       - key: FORBIDDEN_DATABASES
         value: yitav,test,admin,local
-    # CLIENT_ORIGIN is intentionally absent: the client is served from this same
-    # service, and config.js already trusts RENDER_EXTERNAL_URL.
