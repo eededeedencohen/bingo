@@ -37,6 +37,7 @@ export default function App() {
     connected,
     me,
     marks,
+    markedCount,
     asked,
     current,
     status,
@@ -118,7 +119,7 @@ export default function App() {
             hasBingo={hasLine}
             claiming={claiming}
             disabled={!connected || iWon}
-            markedCount={marks.size + 1}
+            markedCount={markedCount}
           />
         </section>
 

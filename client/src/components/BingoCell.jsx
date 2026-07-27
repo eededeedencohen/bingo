@@ -3,17 +3,27 @@ import { memo } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Check, Heart } from 'lucide-react';
 
-import { COLUMNS } from '../lib/theme';
+import { columnsFor } from '../lib/theme';
 import { useI18n } from '../lib/i18n';
+
+/**
+ * Answer text scales with the board: a 3×3 cell is a third of the screen wide
+ * and can carry big type; a 5×5 cell on a phone cannot.
+ */
+function labelClass(size, length) {
+  if (size === 3) return length > 9 ? 'text-sm sm:text-lg' : 'text-base sm:text-xl';
+  if (size === 4) return length > 9 ? 'text-xs sm:text-base' : 'text-sm sm:text-lg';
+  return length > 9 ? 'text-[10px] sm:text-xs' : 'text-[11px] sm:text-sm';
+}
 
 /**
  * One answer on the card. Tapping toggles the mark — nothing is ever marked
  * automatically, and the cell gives no hint about whether the mark is right.
  * That verdict belongs to the server, at claim time.
  */
-function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
+function BingoCell({ cell, row, col, size, marked, isWinning, onToggle }) {
   const { t, lang } = useI18n();
-  const style = COLUMNS[col];
+  const style = columnsFor(size)[col];
   const isFree = cell === null;
   const label = isFree ? t('cell.free') : (cell[lang] ?? cell.en);
 
@@ -78,9 +88,10 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
           // Answers vary from 3 to 14 characters, so the type scales down a step
           // on the longer ones rather than overflowing a small square.
           <span
-            className={`text-center leading-tight font-bold break-words hyphens-auto ${
-              label.length > 9 ? 'text-[10px] sm:text-xs' : 'text-[11px] sm:text-sm'
-            } ${marked ? 'text-white' : 'text-sk-ink'}`}
+            className={`text-center leading-tight font-bold break-words hyphens-auto ${labelClass(
+              size,
+              label.length,
+            )} ${marked ? 'text-white' : 'text-sk-ink'}`}
           >
             {label}
           </span>

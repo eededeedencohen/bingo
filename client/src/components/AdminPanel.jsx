@@ -1,19 +1,16 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Eye, EyeOff, Pause, Play, RotateCcw, SkipForward } from 'lucide-react';
+import { Eye, EyeOff, Pause, Play, Plus, Printer, SkipForward, X } from 'lucide-react';
 
 import { SERVER_URL } from '../lib/socket';
 import { useI18n } from '../lib/i18n';
 
 /**
- * Host controls. Rendered only when the page is opened as `?admin=<ADMIN_KEY>`,
- * and every action hits the key-protected REST API.
+ * Host controls. Reached via the /admin login (or the legacy ?admin= key), and
+ * every action hits the key/token-protected REST API.
  *
  * There is no timer anywhere: a question is revealed if and only if the host
  * presses the button.
- *
- * Dev-grade on purpose — for anything public this belongs behind a real login
- * rather than a URL parameter.
  */
 export default function AdminPanel({ credential, status, remaining }) {
   const { t, lang } = useI18n();
@@ -21,23 +18,38 @@ export default function AdminPanel({ credential, status, remaining }) {
   const [denied, setDenied] = useState(false);
   const [answers, setAnswers] = useState([]);
   const [showKey, setShowKey] = useState(false);
+  const [paper, setPaper] = useState([]);
+  const [paperInput, setPaperInput] = useState('');
+  const [paperError, setPaperError] = useState(false);
 
   const call = useCallback(
-    async (path, method = 'POST') => {
+    async (path, method = 'POST', body) => {
       setBusy(path);
       try {
         const headers = credential?.token
           ? { 'x-admin-token': credential.token }
           : { 'x-admin-key': credential?.key ?? '' };
-        const response = await fetch(`${SERVER_URL}/api/admin/${path}`, { method, headers });
+        if (body) headers['Content-Type'] = 'application/json';
+        const response = await fetch(`${SERVER_URL}/api/admin/${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
         setDenied(response.status === 401);
-        return response.ok ? response.json() : null;
+        return response.ok || response.status === 404 ? response.json() : null;
       } finally {
         setBusy(null);
       }
     },
     [credential],
   );
+
+  // The registered printed boards survive refreshes server-side; load them once.
+  useEffect(() => {
+    call('paper', 'GET').then((data) => {
+      if (data?.registered) setPaper(data.registered);
+    });
+  }, [call]);
 
   const loadAnswers = useCallback(async () => {
     const data = await call('answers', 'GET');
@@ -52,6 +64,27 @@ export default function AdminPanel({ credential, status, remaining }) {
   const toggleKey = async () => {
     if (!showKey) await loadAnswers();
     setShowKey((v) => !v);
+  };
+
+  const newRound = async (size) => {
+    // A tap here wipes every card — make the host mean it.
+    if (!window.confirm(t('admin.resetConfirm', { size }))) return;
+    await call('reset', 'POST', { size });
+  };
+
+  const addPaper = async (event) => {
+    event.preventDefault();
+    const id = paperInput.trim();
+    if (!id) return;
+    const data = await call('paper', 'POST', { id });
+    setPaperError(Boolean(data?.unknown?.length));
+    if (data?.registered) setPaper(data.registered);
+    if (!data?.unknown?.length) setPaperInput('');
+  };
+
+  const removePaper = async (id) => {
+    const data = await call(`paper/${id}`, 'DELETE');
+    if (data?.registered) setPaper(data.registered);
   };
 
   const exhausted = remaining === 0;
@@ -74,7 +107,7 @@ export default function AdminPanel({ credential, status, remaining }) {
         {exhausted ? t('admin.exhausted') : t('admin.next')}
       </motion.button>
 
-      <div className="mt-2 grid grid-cols-3 gap-2">
+      <div className="mt-2 grid grid-cols-2 gap-2">
         {status === 'paused' ? (
           <Secondary onClick={() => call('resume')} disabled={busy !== null} Icon={Play}>
             {t('admin.resume')}
@@ -84,13 +117,81 @@ export default function AdminPanel({ credential, status, remaining }) {
             {t('admin.pause')}
           </Secondary>
         )}
-        <Secondary onClick={() => call('reset')} disabled={busy !== null} Icon={RotateCcw}>
-          {t('admin.reset')}
-        </Secondary>
         <Secondary onClick={toggleKey} disabled={busy !== null} Icon={showKey ? EyeOff : Eye}>
           {t('admin.answerKey')}
         </Secondary>
       </div>
+
+      {/* New round — the host picks the board size. */}
+      <p className="mt-4 mb-2 text-[10px] font-semibold tracking-widest text-sk-gray uppercase">
+        {t('admin.newRound')}
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {[3, 4, 5].map((size) => (
+          <button
+            key={size}
+            type="button"
+            onClick={() => newRound(size)}
+            disabled={busy !== null}
+            className="rounded-xl bg-white py-2.5 text-sm font-bold text-sk-purple shadow-sm ring-1 ring-sk-purple/15 transition-colors hover:bg-sk-purple-soft disabled:opacity-50"
+            dir="ltr"
+          >
+            {size}×{size}
+          </button>
+        ))}
+      </div>
+
+      {/* Printed boards the host handed out. */}
+      <p className="mt-4 mb-2 flex items-center gap-1.5 text-[10px] font-semibold tracking-widest text-sk-gray uppercase">
+        <Printer className="h-3.5 w-3.5" />
+        {t('admin.paperTitle')}
+      </p>
+      <form onSubmit={addPaper} className="flex gap-2">
+        <input
+          value={paperInput}
+          onChange={(event) => {
+            setPaperInput(event.target.value);
+            setPaperError(false);
+          }}
+          inputMode="numeric"
+          placeholder={t('admin.paperPlaceholder')}
+          dir="ltr"
+          className="min-w-0 flex-1 rounded-xl border border-sk-purple/15 bg-white px-3 py-2 text-sm text-sk-ink placeholder:text-slate-400 focus:border-transparent focus:ring-2 focus:ring-sk-purple/60 focus:outline-none"
+        />
+        <button
+          type="submit"
+          disabled={busy !== null || !paperInput.trim()}
+          className="flex items-center gap-1 rounded-xl bg-sk-purple px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-sk-purple-2 disabled:opacity-50"
+        >
+          <Plus className="h-4 w-4" />
+          {t('admin.paperAdd')}
+        </button>
+      </form>
+      {paperError && (
+        <p className="mt-2 text-xs font-semibold text-rose-600">{t('admin.paperInvalid')}</p>
+      )}
+      {paper.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {paper.map((id) => (
+            <span
+              key={id}
+              className="flex items-center gap-1 rounded-full bg-sk-teal-soft px-2.5 py-1 text-xs font-bold text-sk-teal-3 ring-1 ring-sk-teal-2/30"
+              dir="ltr"
+            >
+              {id}
+              <button
+                type="button"
+                onClick={() => removePaper(id)}
+                aria-label={`remove ${id}`}
+                className="rounded-full p-0.5 hover:bg-white/60"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+      <p className="mt-2 text-[11px] leading-snug text-sk-gray">{t('admin.paperHint')}</p>
 
       {denied && (
         <p className="mt-3 text-xs font-semibold text-rose-600">{t('admin.unauthorized')}</p>
@@ -134,7 +235,7 @@ function Secondary({ onClick, disabled, Icon, children }) {
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex flex-col items-center justify-center gap-1 rounded-xl bg-white px-2 py-2.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-sk-purple/15 transition-colors hover:bg-sk-purple-soft disabled:opacity-50"
+      className="flex items-center justify-center gap-1.5 rounded-xl bg-white px-2 py-2.5 text-[11px] font-semibold text-slate-700 shadow-sm ring-1 ring-sk-purple/15 transition-colors hover:bg-sk-purple-soft disabled:opacity-50"
     >
       <Icon className="h-4 w-4" />
       {children}

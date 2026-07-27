@@ -48,6 +48,38 @@ whichever language the player picked, so switching mid-round changes the words
 and nothing else. The 5×5 grid itself stays LTR: B-I-N-G-O is the game's
 notation, like a phone number, not prose.
 
+## Board sizes
+
+A round is played on **3×3, 4×4 or 5×5** cards — the host picks when starting a
+round (the size buttons under "New round" in the host panel). Odd sizes carry a
+FREE centre cell; 4×4 has no centre, so no free cell. Everyone in a round plays
+the same size.
+
+## Printed boards
+
+150 pre-generated paper cards live in `server/paper-boards.js` — 50 per size —
+for players who prefer pen and paper. Print-ready PDFs (A4, two cards per page,
+Hebrew, each carrying its board ID) are in [`print/`](print/):
+
+```
+print/shekel-bingo-3x3.pdf   boards 301-350
+print/shekel-bingo-4x4.pdf   boards 401-450
+print/shekel-bingo-5x5.pdf   boards 501-550
+```
+
+The ID's first digit is the size — board **517** is 5×5 card #17.
+
+The host types the IDs of the sheets actually handed out into "Printed boards"
+in the host panel. A paper player marks by hand, so their marks are by
+definition the questions asked so far — the roster ticks their cards off
+automatically and flags a paper board the moment it reaches bingo, so the host
+knows to check the physical sheet.
+
+⚠️ Never regenerate `server/paper-boards.js` after printing: the printed IDs
+must keep matching the stored cells, or the tracking follows the wrong cards.
+(Regenerate with `node scripts/generate-paper-boards.mjs`, re-render PDFs with
+`node scripts/make-paper-pdf.mjs` — needs `puppeteer-core` and a local Chrome.)
+
 ## The question bank
 
 `server/questions.js` — 46 entries, each with one unambiguous answer in both

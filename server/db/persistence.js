@@ -62,14 +62,23 @@ const active = () => currentRoundId !== null;
  * Begin a round. The ObjectId is generated in-process so callers get a usable
  * roundId immediately; the insert itself is just another queued write.
  */
-export function beginRound(startedAt = new Date()) {
+export function beginRound(size = 5, startedAt = new Date()) {
   currentRoundId = new Types.ObjectId();
   enqueue(pendingRoundOps, {
     filter: { _id: currentRoundId },
-    update: { $setOnInsert: { status: 'idle', asked: [], askedCount: 0, startedAt } },
+    update: { $setOnInsert: { status: 'idle', size, asked: [], askedCount: 0, startedAt } },
     upsert: true,
   });
   return String(currentRoundId);
+}
+
+/** The host's registered printed-board IDs — replaced wholesale, tiny payload. */
+export function recordPaper(ids) {
+  if (!active()) return;
+  enqueue(pendingRoundOps, {
+    filter: { _id: currentRoundId },
+    update: { $set: { paperBoards: [...ids] } },
+  });
 }
 
 export const currentRound = () => (currentRoundId ? String(currentRoundId) : null);
@@ -318,6 +327,8 @@ export async function loadRestorableRound() {
 
   return {
     roundId: String(round._id),
+    size: round.size ?? 5,
+    paperBoards: round.paperBoards ?? [],
     // A dropped batch leaves null holes in the positional array; filter them out
     // rather than letting a hole shift every later question's position.
     asked: (round.asked ?? []).filter(Boolean).sort((a, b) => a.i - b.i),
@@ -326,7 +337,7 @@ export async function loadRestorableRound() {
     winners: (round.winners ?? []).map((w) => ({
       playerId: w.playerId,
       name: w.name,
-      lines: linesByIds(w.lineIds),
+      lines: linesByIds(w.lineIds, round.size ?? 5),
       askedCount: w.askedCount,
       at: w.at instanceof Date ? w.at.getTime() : w.at,
     })),

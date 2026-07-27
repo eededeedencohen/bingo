@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'motion/react';
-import { AlertTriangle, Trophy, Users, WifiOff } from 'lucide-react';
+import { AlertTriangle, Printer, Trophy, Users, WifiOff } from 'lucide-react';
 
 import { useI18n } from '../lib/i18n';
 
@@ -48,13 +48,14 @@ export default function PlayerRoster({ roster }) {
                       : 'bg-slate-50'
                 }`}
               >
+                {player.paper && <Printer className="h-3.5 w-3.5 shrink-0 text-sk-purple-2" />}
                 <span
                   className={`truncate font-semibold ${
                     player.connected ? 'text-sk-ink' : 'text-slate-400'
                   }`}
                 >
                   {/* bdi keeps a Latin name from dragging Hebrew punctuation around */}
-                  <bdi>{player.name}</bdi>
+                  <bdi>{player.paper ? t('roster.paper', { id: player.name }) : player.name}</bdi>
                 </span>
 
                 {!player.connected && <WifiOff className="h-3.5 w-3.5 shrink-0 text-slate-400" />}
@@ -80,8 +81,8 @@ export default function PlayerRoster({ roster }) {
                       {t('roster.closeToWin')}
                     </span>
                   ) : (
-                    <span className="text-xs tabular-nums text-sk-gray">
-                      {player.marked}/25
+                    <span className="text-xs tabular-nums text-sk-gray" dir="ltr">
+                      {player.marked}/{player.cells ?? 25}
                     </span>
                   )}
                 </span>

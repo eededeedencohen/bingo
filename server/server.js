@@ -53,19 +53,22 @@ import {
   STRICT_MARKS,
 } from './config.js';
 import {
-  ANSWERS_PER_CARD,
+  answersPerCard,
   askNextQuestion,
-  BOARD_SIZE,
+  BOARD_SIZES,
   cellKey,
   createGameState,
+  DEFAULT_SIZE,
   findWrongMarks,
   generateBoard,
   isFreeCell,
-  LINES,
+  linesFor,
+  paperProgress,
   QUESTION_BY_ID,
   QUESTIONS,
   verifyClaim,
 } from './game.js';
+import { PAPER_BOARDS } from './paper-boards.js';
 import { login, logout, validateToken } from './auth.js';
 import { closeMongo, connectMongo, dbState } from './db/mongo.js';
 import {
@@ -76,6 +79,7 @@ import {
   persistenceStats,
   recordAsk,
   recordClaim,
+  recordPaper,
   recordPlayer,
   recordStatus,
   recordWinner,
@@ -116,7 +120,7 @@ const ADMIN_ROOM = 'admins';
 
 /* ── In-memory state (authoritative) ────────────────────────────────────────── */
 
-let game = createGameState();
+let game = createGameState(DEFAULT_SIZE);
 
 /**
  * playerId -> { playerId, name, board, marks:Set, socketId, connected, ... }
@@ -126,6 +130,15 @@ let game = createGameState();
  * "you can't call bingo with a wrong mark" enforceable rather than decorative.
  */
 const players = new Map();
+
+/**
+ * Printed boards: the full registry ships with the server; the host registers
+ * the IDs actually handed out so the roster can track them. A paper player's
+ * marks are by definition the asked questions, so their progress is computed —
+ * never claimed.
+ */
+const PAPER_BY_ID = new Map(PAPER_BOARDS.map((b) => [b.id, b]));
+const registeredPaper = new Set();
 
 let restorePending = PERSISTENCE_ENABLED;
 
@@ -157,6 +170,7 @@ const askedForClient = () =>
 function publicState() {
   return {
     status: game.status,
+    size: game.size,
     asked: askedForClient(),
     current: askedForClient().at(-1) ?? null,
     remaining: game.remaining.length,
@@ -183,15 +197,16 @@ const adminsWatching = () => (io.sockets.adapter.rooms.get(ADMIN_ROOM)?.size ?? 
  * and it only runs when a host is actually watching (see broadcastRoster).
  */
 function progressFor(player) {
-  const marked = player.marks.size + 1; // +1 for the FREE centre
+  const size = player.board.length;
+  const marked = player.marks.size + (size % 2 === 1 ? 1 : 0); // free centre counts
   const wrong = findWrongMarks(player.board, player.marks, game.askedSet).length;
 
   // Fewest cells still needed on any single line.
-  let needs = BOARD_SIZE;
-  for (const line of LINES) {
+  let needs = size;
+  for (const line of linesFor(size)) {
     let missing = 0;
     for (const [r, c] of line.cells) {
-      if (!isFreeCell(r, c) && !player.marks.has(cellKey(r, c))) missing += 1;
+      if (!isFreeCell(r, c, size) && !player.marks.has(cellKey(r, c))) missing += 1;
     }
     if (missing < needs) needs = missing;
   }
@@ -213,6 +228,7 @@ function rosterPayload() {
       name: player.name,
       connected: player.connected,
       joinedAt: player.joinedAt,
+      cells: player.board.length ** 2,
       marked,
       needs,
       wrong,
@@ -220,8 +236,35 @@ function rosterPayload() {
       claims: player.claims,
     });
   }
+
+  // Printed boards ride in the same list: their marks ARE the asked questions,
+  // so when a question lands on a paper card the host sees it ticked here.
+  for (const id of registeredPaper) {
+    const board = PAPER_BY_ID.get(id);
+    if (!board) continue;
+    const { marked, needs, won } = paperProgress(board.cells, game.askedSet);
+    rows.push({
+      playerId: `paper:${id}`,
+      name: id,
+      paper: true,
+      size: board.size,
+      connected: true,
+      cells: board.size ** 2,
+      marked,
+      needs,
+      wrong: 0,
+      won,
+      claims: null,
+    });
+  }
+
   rows.sort((a, b) => a.needs - b.needs || b.marked - a.marked);
-  return { players: rows, online: io.engine.clientsCount, total: players.size };
+  return {
+    players: rows,
+    online: io.engine.clientsCount,
+    total: players.size,
+    paper: [...registeredPaper],
+  };
 }
 
 function broadcastRoster() {
@@ -276,12 +319,13 @@ function askAndBroadcast() {
   return record;
 }
 
-function resetGame() {
-  game = createGameState();
-  beginRound();
+function resetGame(size = game.size) {
+  game = createGameState(size);
+  beginRound(size);
+  recordPaper(registeredPaper); // carry the registered sheets into the new round
 
   for (const player of players.values()) {
-    player.board = generateBoard();
+    player.board = generateBoard(game.size);
     player.marks = new Set();
     player.lastClaimAt = 0;
     player.claims = { accepted: 0, rejected: 0 };
@@ -322,7 +366,7 @@ function sanitizeName(raw) {
   if (typeof raw !== 'string') return `Player ${Math.floor(Math.random() * 900 + 100)}`;
   const cleaned = raw
     // eslint-disable-next-line no-control-regex -- C0/C1 and bidi overrides are exactly the target
-    .replace(/[ --‎‏‪-‮⁦-⁩]/g, '')
+    .replace(/[\u0000-\u001F\u007F-\u009F\u200E\u200F\u202A-\u202E\u2066-\u2069]/g, '')
     .trim();
   const name = [...cleaned].slice(0, MAX_NAME_LENGTH).join('');
   return name || `Player ${Math.floor(Math.random() * 900 + 100)}`;
@@ -340,7 +384,7 @@ io.on('connection', (socket) => {
 
       const player = existing ?? {
         playerId: randomUUID(),
-        board: generateBoard(),
+        board: generateBoard(game.size),
         marks: new Set(),
         lastClaimAt: 0,
         joinedAt: Date.now(),
@@ -383,15 +427,16 @@ io.on('connection', (socket) => {
       const player = players.get(socket.data.playerId);
       if (!player) return reply({ ok: false, reason: 'NOT_JOINED' });
 
+      const size = player.board.length;
       const row = Number(payload.row);
       const col = Number(payload.col);
       if (!Number.isInteger(row) || !Number.isInteger(col)) {
         return reply({ ok: false, reason: 'BAD_CELL' });
       }
-      if (row < 0 || col < 0 || row >= BOARD_SIZE || col >= BOARD_SIZE) {
+      if (row < 0 || col < 0 || row >= size || col >= size) {
         return reply({ ok: false, reason: 'BAD_CELL' });
       }
-      if (isFreeCell(row, col)) return reply({ ok: true, marks: [...player.marks] });
+      if (isFreeCell(row, col, size)) return reply({ ok: true, marks: [...player.marks] });
 
       const key = cellKey(row, col);
       if (player.marks.has(key)) player.marks.delete(key);
@@ -593,12 +638,57 @@ admin.post('/resume', (_req, res) => {
   res.json({ ok: true, state: publicState() });
 });
 
-admin.post('/reset', (_req, res) => {
-  resetGame();
+/** New round; the host may pick a board size (3, 4 or 5). */
+admin.post('/reset', (req, res) => {
+  const requested = Number(req.body?.size);
+  const size = BOARD_SIZES.includes(requested) ? requested : game.size;
+  resetGame(size);
   res.json({ ok: true, state: publicState() });
 });
 
 admin.get('/players', (_req, res) => res.json(rosterPayload()));
+
+/* ── Printed boards ─────────────────────────────────────────────────────────── */
+
+/** The sheets the host actually handed out, tracked live in the roster. */
+admin.get('/paper', (_req, res) =>
+  res.json({ ok: true, registered: [...registeredPaper], available: PAPER_BOARDS.length }),
+);
+
+admin.post('/paper', (req, res) => {
+  const ids = Array.isArray(req.body?.ids) ? req.body.ids : [req.body?.id];
+  const added = [];
+  const unknown = [];
+  for (const raw of ids) {
+    const id = String(raw ?? '').trim();
+    if (!id) continue;
+    if (PAPER_BY_ID.has(id)) {
+      registeredPaper.add(id);
+      added.push(id);
+    } else {
+      unknown.push(id);
+    }
+  }
+  if (added.length) {
+    recordPaper(registeredPaper);
+    broadcastRoster();
+  }
+  res.status(unknown.length && !added.length ? 404 : 200).json({
+    ok: unknown.length === 0,
+    added,
+    unknown,
+    registered: [...registeredPaper],
+  });
+});
+
+admin.delete('/paper/:id', (req, res) => {
+  const removed = registeredPaper.delete(String(req.params.id));
+  if (removed) {
+    recordPaper(registeredPaper);
+    broadcastRoster();
+  }
+  res.json({ ok: removed, registered: [...registeredPaper] });
+});
 
 /** The answer key for what has been asked so far. Host eyes only. */
 admin.get('/answers', (_req, res) =>
@@ -628,7 +718,7 @@ app.get('/api/state', (_req, res) =>
     players: players.size,
     roundId: currentRound(),
     questionBank: QUESTIONS.length,
-    answersPerCard: ANSWERS_PER_CARD,
+    answersPerCard: answersPerCard(game.size),
   }),
 );
 
@@ -691,10 +781,14 @@ async function restore() {
     const snapshot = await loadRestorableRound();
     if (!snapshot || game.asked.length > 0) {
       await abandonStaleRounds();
-      beginRound();
+      beginRound(game.size);
       return;
     }
 
+    // The restored round dictates the geometry: rebuild the state at ITS size,
+    // then replay. A player who joined during the boot window and got a card of
+    // the wrong size falls into the board-replacement branch below.
+    game = createGameState(snapshot.size);
     for (const ask of snapshot.asked) {
       game.asked.push({ questionId: ask.q, index: ask.i });
       game.askedSet.add(ask.q);
@@ -703,6 +797,10 @@ async function restore() {
     game.winners = snapshot.winners;
     game.startedAt = snapshot.startedAt ? new Date(snapshot.startedAt).getTime() : null;
     game.status = snapshot.asked.length > 0 ? 'paused' : 'idle';
+
+    for (const id of snapshot.paperBoards) {
+      if (PAPER_BY_ID.has(id)) registeredPaper.add(id);
+    }
 
     for (const stored of snapshot.players) {
       const existing = players.get(stored.playerId);
@@ -732,13 +830,29 @@ async function restore() {
       }
     }
 
+    // Anyone who joined during the boot window but is NOT in the snapshot got a
+    // provisional card at the default size — re-deal at the round's real size.
+    for (const player of players.values()) {
+      if (player.board.length !== game.size) {
+        player.board = generateBoard(game.size);
+        player.marks = new Set();
+        recordPlayer(player);
+        if (player.socketId && player.connected) {
+          io.to(player.socketId).emit('new_board', {
+            board: boardForClient(player.board),
+            marks: [],
+          });
+        }
+      }
+    }
+
     console.log(
       `↩️  Restored round ${snapshot.roundId}: ${snapshot.asked.length} questions, ${snapshot.players.length} cards (paused).`,
     );
     io.emit('game_reset', { state: publicState() });
   } catch (error) {
     console.warn(`⚠️  Round restore failed (${error.message}). Starting fresh.`);
-    beginRound();
+    beginRound(game.size);
   }
 }
 
@@ -746,7 +860,7 @@ async function restore() {
 // from accepting players.
 httpServer.listen(PORT, () => {
   console.log(`🎱 Bingo server listening on http://localhost:${PORT}`);
-  console.log(`   questions     : ${QUESTIONS.length} in bank, ${ANSWERS_PER_CARD} per card`);
+  console.log(`   questions     : ${QUESTIONS.length} in bank; sizes 3/4/5`);
   console.log(`   advance       : host-driven only (POST /api/admin/next)`);
   console.log(`   strict marks  : ${STRICT_MARKS}`);
   console.log(`   persistence   : ${PERSISTENCE_ENABLED ? 'enabled' : 'disabled (memory only)'}`);
@@ -768,7 +882,7 @@ connectMongo()
       startPersistence();
       await restore();
     } else {
-      beginRound();
+      beginRound(game.size);
     }
   })
   .catch((error) => console.warn(`⚠️  Persistence bootstrap failed: ${error.message}`))

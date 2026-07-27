@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { SERVER_URL } from '../lib/socket';
 
@@ -20,7 +20,7 @@ export function useAdminAuth() {
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
 
-  const urlKey = new URLSearchParams(window.location.search).get('admin');
+  const urlKey = useMemo(() => new URLSearchParams(window.location.search).get('admin'), []);
 
   // Validate the stored token once on mount; a dead token falls back to login.
   useEffect(() => {
@@ -82,12 +82,17 @@ export function useAdminAuth() {
     setAuthorized(false);
   }, [token]);
 
-  return {
-    authorized,
-    busy,
-    error,
-    loginWith,
-    signOut,
-    credential: urlKey ? { key: urlKey } : token ? { token } : null,
-  };
+  /**
+   * MEMOIZED on purpose: this object flows into useEffect dependencies (the
+   * paper-board fetch, the socket admin_auth). A fresh object every render
+   * would re-fire those effects on every render — each setState from them
+   * triggers another render, and the admin panel strobes. Identity must only
+   * change when the underlying credential actually does.
+   */
+  const credential = useMemo(
+    () => (urlKey ? { key: urlKey } : token ? { token } : null),
+    [urlKey, token],
+  );
+
+  return { authorized, busy, error, loginWith, signOut, credential };
 }

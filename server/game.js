@@ -6,6 +6,12 @@
  * looks for that question's answer on their own card and marks it themselves.
  * Nothing is marked automatically and nothing advances on a timer.
  *
+ * BOARD SIZES
+ * A round is played on 3×3, 4×4 or 5×5 cards — the host picks when starting a
+ * round. Odd sizes have a FREE centre cell; 4×4 has no centre, so no free cell.
+ * Every rule below derives the size from the board it is handed, so no caller
+ * can pair a board with the wrong geometry.
+ *
  * A cell stores a QUESTION ID, not the answer text — the client renders the
  * answer in whichever language the player chose, so one board serves both
  * Hebrew and English players.
@@ -16,18 +22,25 @@ import { QUESTIONS } from './questions.js';
 
 export { QUESTIONS };
 
+export const BOARD_SIZES = [3, 4, 5];
+export const DEFAULT_SIZE = 5;
 export const LETTERS = ['B', 'I', 'N', 'G', 'O'];
-export const BOARD_SIZE = 5;
-export const CELLS = BOARD_SIZE * BOARD_SIZE;
-export const ANSWERS_PER_CARD = CELLS - 1; // 24 — the centre is FREE
-export const FREE_CELL = { row: 2, col: 2 };
 
 export const QUESTION_BY_ID = new Map(QUESTIONS.map((q) => [q.id, q]));
 export const QUESTION_IDS = QUESTIONS.map((q) => q.id);
 
-if (QUESTIONS.length < ANSWERS_PER_CARD) {
+/** Odd boards give the centre away; even boards have no centre to give. */
+export const hasFreeCell = (size) => size % 2 === 1;
+
+export const isFreeCell = (row, col, size) =>
+  hasFreeCell(size) && row === (size - 1) / 2 && col === (size - 1) / 2;
+
+/** How many answers a card of this size actually holds. */
+export const answersPerCard = (size) => size * size - (hasFreeCell(size) ? 1 : 0);
+
+if (QUESTIONS.length < answersPerCard(5)) {
   throw new Error(
-    `Question bank too small: ${QUESTIONS.length} questions, need at least ${ANSWERS_PER_CARD}.`,
+    `Question bank too small: ${QUESTIONS.length} questions, need at least ${answersPerCard(5)}.`,
   );
 }
 
@@ -42,19 +55,18 @@ function shuffled(source) {
 }
 
 /**
- * Deal a card: 24 distinct question IDs, row-major, `null` in the centre.
- *
- * With a bank of N questions every player gets a different subset, so two
- * players rarely share a card even though every card answers the same questions.
+ * Deal a card: distinct question IDs, row-major, `null` at the free centre on
+ * odd sizes. With a bank of 46, every player gets a visibly different subset.
  */
-export function generateBoard() {
-  const picks = shuffled(QUESTION_IDS).slice(0, ANSWERS_PER_CARD);
+export function generateBoard(size = DEFAULT_SIZE) {
+  if (!BOARD_SIZES.includes(size)) throw new Error(`Illegal board size ${size}`);
+  const picks = shuffled(QUESTION_IDS).slice(0, answersPerCard(size));
   const board = [];
   let cursor = 0;
-  for (let r = 0; r < BOARD_SIZE; r += 1) {
+  for (let r = 0; r < size; r += 1) {
     const row = [];
-    for (let c = 0; c < BOARD_SIZE; c += 1) {
-      if (r === FREE_CELL.row && c === FREE_CELL.col) row.push(null);
+    for (let c = 0; c < size; c += 1) {
+      if (isFreeCell(r, c, size)) row.push(null);
       else {
         row.push(picks[cursor]);
         cursor += 1;
@@ -65,36 +77,40 @@ export function generateBoard() {
   return board;
 }
 
-/** 5 rows + 5 columns + 2 diagonals, precomputed once. */
-export const LINES = (() => {
+/* ── Lines ──────────────────────────────────────────────────────────────────── */
+
+const linesCache = new Map();
+
+/** N rows + N columns + 2 diagonals, precomputed once per size. */
+export function linesFor(size) {
+  if (linesCache.has(size)) return linesCache.get(size);
   const lines = [];
-  for (let r = 0; r < BOARD_SIZE; r += 1) {
-    lines.push({ id: `row-${r}`, cells: Array.from({ length: BOARD_SIZE }, (_, c) => [r, c]) });
+  for (let r = 0; r < size; r += 1) {
+    lines.push({ id: `row-${r}`, cells: Array.from({ length: size }, (_, c) => [r, c]) });
   }
-  for (let c = 0; c < BOARD_SIZE; c += 1) {
-    lines.push({ id: `col-${c}`, cells: Array.from({ length: BOARD_SIZE }, (_, r) => [r, c]) });
+  for (let c = 0; c < size; c += 1) {
+    lines.push({ id: `col-${c}`, cells: Array.from({ length: size }, (_, r) => [r, c]) });
   }
-  lines.push({ id: 'diag-tl-br', cells: Array.from({ length: BOARD_SIZE }, (_, i) => [i, i]) });
+  lines.push({ id: 'diag-tl-br', cells: Array.from({ length: size }, (_, i) => [i, i]) });
   lines.push({
     id: 'diag-tr-bl',
-    cells: Array.from({ length: BOARD_SIZE }, (_, i) => [i, BOARD_SIZE - 1 - i]),
+    cells: Array.from({ length: size }, (_, i) => [i, size - 1 - i]),
   });
+  linesCache.set(size, lines);
   return lines;
-})();
-
-const LINES_BY_ID = new Map(LINES.map((line) => [line.id, line]));
+}
 
 /**
- * Rehydrate stored line IDs into full {id, cells} objects. Persistence keeps
- * only IDs; the client renders `line.cells`, so a restored winner must come back
- * with the same shape a live one has.
+ * Rehydrate stored line IDs into full {id, cells} objects for a given size.
+ * Persistence keeps only IDs; the client renders `line.cells`, so a restored
+ * winner must come back with the same shape a live one has.
  */
-export function linesByIds(ids) {
-  return (ids ?? []).map((id) => LINES_BY_ID.get(id)).filter(Boolean);
+export function linesByIds(ids, size = DEFAULT_SIZE) {
+  const byId = new Map(linesFor(size).map((line) => [line.id, line]));
+  return (ids ?? []).map((id) => byId.get(id)).filter(Boolean);
 }
 
 export const cellKey = (row, col) => `${row}-${col}`;
-export const isFreeCell = (row, col) => row === FREE_CELL.row && col === FREE_CELL.col;
 
 /* ── Marking ────────────────────────────────────────────────────────────────── */
 
@@ -104,7 +120,7 @@ export const isFreeCell = (row, col) => row === FREE_CELL.row && col === FREE_CE
  * say must invalidate a bingo.
  */
 export function isCorrectMark(board, askedSet, row, col) {
-  if (isFreeCell(row, col)) return true;
+  if (isFreeCell(row, col, board.length)) return true;
   const questionId = board[row]?.[col];
   return questionId != null && askedSet.has(questionId);
 }
@@ -119,25 +135,26 @@ export function findWrongMarks(board, marks, askedSet) {
   return wrong;
 }
 
-/** A cell counts toward a line if the player marked it, or it's the FREE centre. */
-const isMarked = (marks, row, col) => isFreeCell(row, col) || marks.has(cellKey(row, col));
+/** A cell counts toward a line if the player marked it, or it's the free centre. */
+const isMarked = (marks, row, col, size) =>
+  isFreeCell(row, col, size) || marks.has(cellKey(row, col));
 
 /** Lines the player has fully marked. Says nothing about whether marks are correct. */
-export function findMarkedLines(marks) {
-  return LINES.filter((line) => line.cells.every(([r, c]) => isMarked(marks, r, c)));
+export function findMarkedLines(marks, size = DEFAULT_SIZE) {
+  return linesFor(size).filter((line) => line.cells.every(([r, c]) => isMarked(marks, r, c, size)));
 }
 
 /**
- * The single authority on a bingo claim.
+ * The single authority on a bingo claim. Size comes from the board itself.
  *
  * `strict` (default) rejects when ANY mark on the card is wrong, not just the
  * ones on the completed line — "you can't call bingo if you made a mistake".
- * Set strict=false to judge only the completed line.
  */
 export function verifyClaim(board, marks, askedSet, { strict = true } = {}) {
   if (askedSet.size === 0) return { ok: false, reason: 'NOT_STARTED' };
 
-  const lines = findMarkedLines(marks);
+  const size = board.length;
+  const lines = findMarkedLines(marks, size);
   if (lines.length === 0) return { ok: false, reason: 'NO_BINGO' };
 
   const scope = strict
@@ -150,10 +167,41 @@ export function verifyClaim(board, marks, askedSet, { strict = true } = {}) {
   return { ok: true, lines };
 }
 
+/* ── Paper boards ───────────────────────────────────────────────────────────── */
+
+/**
+ * Progress of a PRINTED board, tracked by the host. A paper player marks a cell
+ * whenever its question is asked, so their marks are — by definition — exactly
+ * the asked set intersected with their card. No claim flow: the host sees the
+ * board reach bingo here and checks the physical sheet.
+ */
+export function paperProgress(cells, askedSet) {
+  const size = cells.length;
+  let marked = 0;
+  for (let r = 0; r < size; r += 1) {
+    for (let c = 0; c < size; c += 1) {
+      if (cells[r][c] === null || askedSet.has(cells[r][c])) marked += 1;
+    }
+  }
+
+  let needs = size;
+  for (const line of linesFor(size)) {
+    let missing = 0;
+    for (const [r, c] of line.cells) {
+      if (cells[r][c] !== null && !askedSet.has(cells[r][c])) missing += 1;
+    }
+    if (missing < needs) needs = missing;
+  }
+
+  return { marked, needs, won: needs === 0 };
+}
+
 /* ── Game state ─────────────────────────────────────────────────────────────── */
 
-export function createGameState() {
+export function createGameState(size = DEFAULT_SIZE) {
+  if (!BOARD_SIZES.includes(size)) throw new Error(`Illegal board size ${size}`);
   return {
+    size,
     status: 'idle', // idle | running | paused | finished
     asked: [], // [{ questionId, index }] in the order the host revealed them
     askedSet: new Set(), // O(1) membership — what mark validation reads

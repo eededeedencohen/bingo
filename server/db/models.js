@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { ANSWERS_PER_CARD, BOARD_SIZE, QUESTION_BY_ID } from '../game.js';
+import { answersPerCard, BOARD_SIZES, isFreeCell, QUESTION_BY_ID } from '../game.js';
 
 const { Schema, model } = mongoose;
 
@@ -37,6 +37,10 @@ const roundSchema = new Schema(
       enum: ['idle', 'running', 'paused', 'finished', 'abandoned'],
       default: 'idle',
     },
+    // 3, 4 or 5 — chosen by the host when the round is created.
+    size: { type: Number, enum: BOARD_SIZES, default: 5 },
+    // IDs of printed boards the host registered for tracking this round.
+    paperBoards: { type: [String], default: [] },
     // Hard-bounded by the size of the question bank, so the usual unbounded-array
     // warning doesn't apply — a few KB at most.
     asked: { type: [askSchema], default: [] },
@@ -63,14 +67,15 @@ export const Round = model('Round', roundSchema);
  * restored and handed to a player.
  */
 function isLegalBoard(board) {
-  if (!Array.isArray(board) || board.length !== BOARD_SIZE) return false;
+  if (!Array.isArray(board) || !BOARD_SIZES.includes(board.length)) return false;
+  const size = board.length;
   const seen = new Set();
-  for (let r = 0; r < BOARD_SIZE; r += 1) {
+  for (let r = 0; r < size; r += 1) {
     const row = board[r];
-    if (!Array.isArray(row) || row.length !== BOARD_SIZE) return false;
-    for (let c = 0; c < BOARD_SIZE; c += 1) {
+    if (!Array.isArray(row) || row.length !== size) return false;
+    for (let c = 0; c < size; c += 1) {
       const value = row[c];
-      if (r === 2 && c === 2) {
+      if (isFreeCell(r, c, size)) {
         if (value !== null) return false;
       } else {
         if (typeof value !== 'string' || !QUESTION_BY_ID.has(value)) return false;
@@ -79,7 +84,7 @@ function isLegalBoard(board) {
       }
     }
   }
-  return seen.size === ANSWERS_PER_CARD;
+  return seen.size === answersPerCard(size);
 }
 
 const playerSchema = new Schema(

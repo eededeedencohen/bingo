@@ -1,16 +1,23 @@
 import { motion } from 'motion/react';
 
 import BingoCell from './BingoCell';
-import { COLUMNS } from '../lib/theme';
+import { columnsFor, LETTERS } from '../lib/theme';
 import { cellKey } from '../lib/bingo';
 
+// Tailwind scans source text — a template literal would never reach the CSS.
+const GRID_COLS = { 3: 'grid-cols-3', 4: 'grid-cols-4', 5: 'grid-cols-5' };
+
 /**
- * The 5x5 card. `board` is row-major with `null` in the centre for the FREE
- * space; every other cell is `{ id, he, en }` — the answer in both languages, so
- * switching language never needs a new deal.
+ * The card, at whatever size the host chose (3×3, 4×4, 5×5). `board` is
+ * row-major with `null` at the free centre on odd sizes; every other cell is
+ * `{ id, he, en }` — the answer in both languages, so switching language never
+ * needs a new deal.
  */
 export default function BingoBoard({ board, marks, winningCells, onToggle }) {
   if (!board) return <BoardSkeleton />;
+
+  const size = board.length;
+  const columns = columnsFor(size);
 
   return (
     <motion.div
@@ -22,18 +29,21 @@ export default function BingoBoard({ board, marks, winningCells, onToggle }) {
       // prose — like a phone number, it reads left-to-right in every language.
       dir="ltr"
     >
-      <div className="mb-1.5 grid grid-cols-5 gap-1.5 sm:mb-2 sm:gap-2">
-        {COLUMNS.map((column) => (
-          <div
-            key={column.letter}
-            className={`text-center text-lg font-extrabold tracking-widest sm:text-2xl ${column.text}`}
-          >
-            {column.letter}
-          </div>
-        ))}
-      </div>
+      {/* The letters only spell BINGO across five columns. */}
+      {size === 5 && (
+        <div className={`mb-1.5 grid ${GRID_COLS[size]} gap-1.5 sm:mb-2 sm:gap-2`}>
+          {LETTERS.map((letter, col) => (
+            <div
+              key={letter}
+              className={`text-center text-lg font-extrabold tracking-widest sm:text-2xl ${columns[col].text}`}
+            >
+              {letter}
+            </div>
+          ))}
+        </div>
+      )}
 
-      <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+      <div className={`grid ${GRID_COLS[size]} gap-1.5 sm:gap-2`}>
         {board.map((row, r) =>
           row.map((cell, c) => (
             <BingoCell
@@ -41,6 +51,7 @@ export default function BingoBoard({ board, marks, winningCells, onToggle }) {
               cell={cell}
               row={r}
               col={c}
+              size={size}
               marked={cell === null || marks.has(cellKey(r, c))}
               isWinning={winningCells.has(cellKey(r, c))}
               onToggle={onToggle}
@@ -54,7 +65,7 @@ export default function BingoBoard({ board, marks, winningCells, onToggle }) {
 
 function BoardSkeleton() {
   return (
-    <div className="glass p-3 sm:p-5">
+    <div className="glass p-2 sm:p-5">
       <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
         {Array.from({ length: 30 }, (_, i) => (
           <div key={i} className="aspect-square animate-pulse rounded-2xl bg-sk-purple/5" />

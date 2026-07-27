@@ -154,22 +154,27 @@ export function useBingoGame({ adminCredential } = {}) {
     [emitJoin],
   );
 
+  const boardSize = me?.board?.length ?? 5;
+
   /** Toggle a cell. Optimistic, then reconciled against the server's answer. */
-  const toggleMark = useCallback((row, col) => {
-    if (isFreeCell(row, col)) return;
-    const key = cellKey(row, col);
+  const toggleMark = useCallback(
+    (row, col) => {
+      if (isFreeCell(row, col, boardSize)) return;
+      const key = cellKey(row, col);
 
-    setMarks((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+      setMarks((prev) => {
+        const next = new Set(prev);
+        if (next.has(key)) next.delete(key);
+        else next.add(key);
+        return next;
+      });
 
-    socket.emit('mark', { row, col }, (res) => {
-      if (res?.ok) setMarks(new Set(res.marks));
-    });
-  }, []);
+      socket.emit('mark', { row, col }, (res) => {
+        if (res?.ok) setMarks(new Set(res.marks));
+      });
+    },
+    [boardSize],
+  );
 
   const claim = useCallback(() => {
     if (!socket.connected) return;
@@ -188,7 +193,7 @@ export function useBingoGame({ adminCredential } = {}) {
   /* ── Derived view state ──────────────────────────────────────────────────── */
 
   const current = asked.at(-1) ?? null;
-  const markedLines = useMemo(() => findMarkedLines(marks), [marks]);
+  const markedLines = useMemo(() => findMarkedLines(marks, boardSize), [marks, boardSize]);
   const iWon = Boolean(winner && me && winner.playerId === me.playerId);
 
   // Highlight the server-confirmed winning lines if we won; otherwise preview
@@ -201,6 +206,9 @@ export function useBingoGame({ adminCredential } = {}) {
   return {
     connected,
     me,
+    boardSize,
+    // What "fully marked" means depends on the free centre existing.
+    markedCount: marks.size + (boardSize % 2 === 1 ? 1 : 0),
     marks,
     asked,
     current,
