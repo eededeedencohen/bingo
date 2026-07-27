@@ -41,6 +41,13 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Everyone plays from a phone: a stray wide element must clip, never scroll
+     the whole page sideways. */
+  html,
+  body {
+    @apply overflow-x-hidden;
+  }
+
   body {
     @apply bg-[#f7fbfb] font-display text-sk-ink antialiased;
     /* Soft brand washes — teal from the top corners, purple from below — over a
@@ -57,7 +64,14 @@
       auto,
       3rem 3rem,
       3rem 3rem;
-    background-attachment: fixed;
+  }
+
+  /* background-attachment: fixed causes repaint jank (and is ignored) on mobile
+     Safari — only pin the backdrop on screens that can afford it. */
+  @media (min-width: 1024px) {
+    body {
+      background-attachment: fixed;
+    }
   }
 }
 

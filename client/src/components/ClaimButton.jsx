@@ -30,7 +30,7 @@ export default function ClaimButton({ onClaim, hasBingo, disabled, claiming, mar
           : { boxShadow: '0 0 0 0 rgba(0,0,0,0)' }
       }
       transition={{ duration: 1.6, repeat: hasBingo ? Infinity : 0, ease: 'easeInOut' }}
-      className={`relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl px-6 py-5 text-xl font-extrabold tracking-widest uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40 ${
+      className={`relative flex w-full items-center justify-center gap-2.5 overflow-hidden rounded-2xl px-4 py-4 text-lg font-extrabold tracking-widest uppercase transition-opacity disabled:cursor-not-allowed disabled:opacity-40 sm:gap-3 sm:px-6 sm:py-5 sm:text-xl ${
         hasBingo
           ? 'bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple text-white'
           : 'bg-white text-sk-ink shadow-sm ring-1 ring-sk-purple/15 hover:bg-sk-purple-soft'

@@ -80,12 +80,32 @@ export default function App() {
   }
 
   return (
-    <div className="mx-auto min-h-dvh w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className="mx-auto min-h-dvh w-full max-w-6xl px-3 py-4 sm:px-6 sm:py-8">
       <TopBar connected={connected} online={online} status={status} playerName={me.name} />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        {/* The card anchors the desktop layout; on mobile the question comes first. */}
-        <div className="order-2 space-y-4 lg:order-1">
+      {/*
+       * Mobile-first ordering (everyone plays from a phone): the DOM order IS
+       * the mobile order — question first, then the card and the BINGO button,
+       * then everything below the fold. On lg the same sections land in a
+       * two-column grid: board in the wide column, sidebar in the narrow one
+       * (mirrored automatically under RTL).
+       */}
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-5">
+        {/* 1 — the current question, with the host's controls right under it. */}
+        <section className="space-y-4 lg:col-start-2 lg:row-start-1">
+          <QuestionCard current={current} asked={asked.length} total={total} />
+
+          {adminCredential && (
+            <AdminPanel
+              credential={adminCredential}
+              status={status}
+              remaining={total - asked.length}
+            />
+          )}
+        </section>
+
+        {/* 2 — the card and the claim button: the player's whole game. */}
+        <section className="space-y-4 lg:col-start-1 lg:row-span-2 lg:row-start-1">
           <BingoBoard
             board={me.board}
             marks={marks}
@@ -100,34 +120,25 @@ export default function App() {
             disabled={!connected || iWon}
             markedCount={marks.size + 1}
           />
-        </div>
+        </section>
 
-        <aside className="order-1 space-y-4 lg:order-2">
-          <QuestionCard current={current} asked={asked.length} total={total} />
+        {/* 3 — reference material: roster for the host, history for everyone. */}
+        <section className="space-y-4 self-start lg:col-start-2 lg:row-start-2">
+          {adminCredential && <PlayerRoster roster={roster} />}
 
-          {adminCredential && (
-            <>
-              <AdminPanel
-                credential={adminCredential}
-                status={status}
-                remaining={total - asked.length}
-              />
-              <PlayerRoster roster={roster} />
-              {adminCredential.token && (
-                <button
-                  type="button"
-                  onClick={authState.signOut}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  {t('login.signOut')}
-                </button>
-              )}
-            </>
+          {adminCredential?.token && (
+            <button
+              type="button"
+              onClick={authState.signOut}
+              className="flex w-full items-center justify-center gap-2 rounded-xl py-2 text-xs font-semibold text-sk-gray transition-colors hover:bg-sk-purple/5 hover:text-sk-ink"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              {t('login.signOut')}
+            </button>
           )}
 
           <AskedList asked={asked} />
-        </aside>
+        </section>
       </div>
 
       <AnimatePresence>

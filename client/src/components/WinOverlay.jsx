@@ -45,7 +45,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.9, opacity: 0 }}
         transition={{ type: 'spring', stiffness: 240, damping: 20 }}
-        className="glass relative w-full max-w-md overflow-hidden p-8 text-center"
+        className="glass relative w-full max-w-md overflow-hidden p-6 text-center sm:p-8"
       >
         {/* Slow rotating brand glow behind the card. */}
         <motion.div
@@ -73,7 +73,7 @@ export default function WinOverlay({ winner, isMe, onClose }) {
             <PartyPopper className="h-10 w-10 text-white" strokeWidth={2} />
           </motion.div>
 
-          <h2 className="bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple bg-clip-text text-5xl font-extrabold tracking-tight text-transparent">
+          <h2 className="bg-gradient-to-r from-sk-teal-2 via-sk-purple-2 to-sk-purple bg-clip-text text-4xl font-extrabold tracking-tight text-transparent sm:text-5xl">
             {t('win.title')}
           </h2>
 

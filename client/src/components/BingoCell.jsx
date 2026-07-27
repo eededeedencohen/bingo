@@ -61,7 +61,7 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
         </motion.span>
       )}
 
-      <div className="relative flex h-full items-center justify-center p-1.5">
+      <div className="relative flex h-full items-center justify-center p-1 sm:p-1.5">
         {isFree ? (
           <div className="flex flex-col items-center gap-0.5">
             {/* The heart is the Shekel mark's own symbol — it IS the free cell. */}
@@ -78,8 +78,8 @@ function BingoCell({ cell, row, col, marked, isWinning, onToggle }) {
           // Answers vary from 3 to 14 characters, so the type scales down a step
           // on the longer ones rather than overflowing a small square.
           <span
-            className={`text-center leading-tight font-bold hyphens-auto ${
-              label.length > 9 ? 'text-[11px] sm:text-xs' : 'text-xs sm:text-sm'
+            className={`text-center leading-tight font-bold break-words hyphens-auto ${
+              label.length > 9 ? 'text-[10px] sm:text-xs' : 'text-[11px] sm:text-sm'
             } ${marked ? 'text-white' : 'text-sk-ink'}`}
           >
             {label}

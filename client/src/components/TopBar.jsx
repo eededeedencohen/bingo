@@ -8,16 +8,16 @@ export default function TopBar({ connected, online, status, playerName }) {
   const { t } = useI18n();
 
   return (
-    <header className="mb-6 flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-3">
+    <header className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-2 sm:mb-6">
+      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
         {/* The SHEKEL figures — the brand carries the header. */}
-        <img src="/shekel-mark.png" alt='שק"ל' className="h-11 w-auto drop-shadow-sm" />
-        <div>
-          <h1 className="text-xl leading-tight font-extrabold tracking-tight sm:text-2xl">
+        <img src="/shekel-mark.png" alt='שק"ל' className="h-8 w-auto drop-shadow-sm sm:h-11" />
+        <div className="min-w-0">
+          <h1 className="truncate text-lg leading-tight font-extrabold tracking-tight sm:text-2xl">
             {t('app.title')} <span className="text-sk-purple-2">{t('app.titleAccent')}</span>
           </h1>
           {playerName && (
-            <p className="text-xs text-sk-gray">
+            <p className="truncate text-[11px] text-sk-gray sm:text-xs">
               {/* bdi isolates a Latin name inside a Hebrew sentence */}
               <bdi>{t('topbar.playingAs', { name: playerName })}</bdi>
             </p>
@@ -26,7 +26,7 @@ export default function TopBar({ connected, online, status, playerName }) {
       </div>
 
       {/* ms-auto, not ml-auto: this has to hug the trailing edge in RTL too. */}
-      <div className="ms-auto flex flex-wrap items-center gap-2">
+      <div className="ms-auto flex flex-wrap items-center gap-1.5 sm:gap-2">
         <LanguageToggle />
 
         <Pill>
@@ -41,10 +41,21 @@ export default function TopBar({ connected, online, status, playerName }) {
           {t(`status.${status}`)}
         </Pill>
 
-        <Pill tone={connected ? 'ok' : 'bad'}>
-          {connected ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
-          {connected ? t('status.connected') : t('status.offline')}
-        </Pill>
+        {/* On a phone the connection pill earns its space only when something is
+            wrong; on wider screens it is always visible. */}
+        {connected ? (
+          <div className="hidden sm:block">
+            <Pill tone="ok">
+              <Wifi className="h-3.5 w-3.5" />
+              {t('status.connected')}
+            </Pill>
+          </div>
+        ) : (
+          <Pill tone="bad">
+            <WifiOff className="h-3.5 w-3.5" />
+            {t('status.offline')}
+          </Pill>
+        )}
       </div>
     </header>
   );
@@ -59,7 +70,7 @@ function Pill({ children, tone = 'neutral' }) {
   return (
     <motion.span
       layout
-      className={`flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold shadow-sm ring-1 ${tones[tone]}`}
+      className={`flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 text-xs font-semibold shadow-sm ring-1 sm:px-3 sm:py-1.5 ${tones[tone]}`}
     >
       {children}
     </motion.span>

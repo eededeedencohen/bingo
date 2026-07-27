@@ -17,16 +17,16 @@ export default function BingoBoard({ board, marks, winningCells, onToggle }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="glass p-3 sm:p-5"
+      className="glass p-2 sm:p-5"
       // The card itself never mirrors. B-I-N-G-O is the game's notation, not
       // prose — like a phone number, it reads left-to-right in every language.
       dir="ltr"
     >
-      <div className="mb-2 grid grid-cols-5 gap-1.5 sm:gap-2">
+      <div className="mb-1.5 grid grid-cols-5 gap-1.5 sm:mb-2 sm:gap-2">
         {COLUMNS.map((column) => (
           <div
             key={column.letter}
-            className={`text-center text-xl font-extrabold tracking-widest sm:text-2xl ${column.text}`}
+            className={`text-center text-lg font-extrabold tracking-widest sm:text-2xl ${column.text}`}
           >
             {column.letter}
           </div>
