@@ -20,11 +20,11 @@ export const QUESTIONS = [
     "id": "sand",
     "theme": "sea",
     "he": {
-      "q": "מה החומר הצהוב והרך שמכסה את כל חוף הים?",
+      "q": "איזה חומר זהוב מכסה את כל חוף הים, נדבק לנו לרגליים וילדים אוהבים לבנות ממנו ארמונות?",
       "a": "חול"
     },
     "en": {
-      "q": "What is the soft yellow stuff that covers the whole beach?",
+      "q": "Which golden stuff covers the whole beach, sticks to our feet, and kids love building castles out of it?",
       "a": "Sand"
     }
   },
@@ -32,11 +32,11 @@ export const QUESTIONS = [
     "id": "wave",
     "theme": "sea",
     "he": {
-      "q": "איך קוראים למים שמתרוממים בים ומשתברים על החוף עם קצף?",
+      "q": "איך קוראים לקיר המים שנשבר אל החוף בים, ואפשר לגלוש עליו עם גלשן?",
       "a": "גל"
     },
     "en": {
-      "q": "What do you call the water that rises up in the sea and breaks on the shore with foam?",
+      "q": "What do you call the wall of water that breaks onto the shore, the one you can ride on a surfboard?",
       "a": "Wave"
     }
   },
@@ -44,11 +44,11 @@ export const QUESTIONS = [
     "id": "shell",
     "theme": "sea",
     "he": {
-      "q": "איך קוראים לבית הקשה של חיית ים שילדים מוצאים בחול ואוספים?",
+      "q": "איזו קונכייה קטנה וקשה שפעם הייתה בית של חיית ים, אנחנו אוהבים לאסוף למזכרת על החוף?",
       "a": "צדף"
     },
     "en": {
-      "q": "What do you call the hard little case of a sea creature that kids find in the sand and collect?",
+      "q": "Which small hard case that was once a sea creature's home do we love collecting on the beach as a keepsake?",
       "a": "Shell"
     }
   },
@@ -56,11 +56,11 @@ export const QUESTIONS = [
     "id": "towel",
     "theme": "sea",
     "he": {
-      "q": "במה מתנגבים כשיוצאים רטובים מהמים?",
+      "q": "על איזה פריט רך וסופג אנחנו שוכבים להשתזף, ומשתמשים בו כדי להתייבש כשיוצאים מהמים?",
       "a": "מגבת"
     },
     "en": {
-      "q": "What do you dry yourself with when you come out of the water all wet?",
+      "q": "Which soft absorbent item do we lie on to sunbathe, and use to dry off when we come out of the water?",
       "a": "Towel"
     }
   },
@@ -68,11 +68,11 @@ export const QUESTIONS = [
     "id": "swimsuit",
     "theme": "sea",
     "he": {
-      "q": "איזה בגד לובשים כדי להיכנס למים?",
+      "q": "איזה פריט לבוש עשוי מבד שמתייבש מהר, והוא חובה לכל קפיצה לבריכה או לים?",
       "a": "בגד ים"
     },
     "en": {
-      "q": "Which piece of clothing do you put on in order to get into the water?",
+      "q": "Which piece of clothing is made of quick-drying fabric and is a must for any jump into the pool or the sea?",
       "a": "Swimsuit"
     }
   },
@@ -80,11 +80,11 @@ export const QUESTIONS = [
     "id": "bucket",
     "theme": "sea",
     "he": {
-      "q": "במה ממלאים חול ומים בחוף כדי לבנות מגדל?",
+      "q": "באיזה כלי פלסטיק פשוט נעזרים בחוף כדי לשאת מים שיעזרו לנו לבנות ארמונות על שפת הים?",
       "a": "דלי"
     },
     "en": {
-      "q": "What do you fill with sand and water at the beach to build a tower?",
+      "q": "Which simple plastic container do we use at the beach to carry water for building castles by the shore?",
       "a": "Bucket"
     }
   },
@@ -92,11 +92,11 @@ export const QUESTIONS = [
     "id": "lifeguard",
     "theme": "sea",
     "he": {
-      "q": "מי יושב במגדל בחוף ושורק לשוחים שמתרחקים מדי?",
+      "q": "מי יושב בסוכה הגבוהה בחוף, שומר שהרוחצים לא יטבעו, ושורק במשרוקית ברגע שהוא רואה מישהו נכנס עמוק מדי (או בחורה יפה)?",
       "a": "מציל"
     },
     "en": {
-      "q": "Who sits in the tower at the beach and whistles at swimmers who go too far out?",
+      "q": "Who sits in the tall hut at the beach, keeps the swimmers from drowning, and blows a whistle the moment someone goes in too deep (or a pretty girl walks by)?",
       "a": "Lifeguard"
     }
   },
@@ -104,11 +104,11 @@ export const QUESTIONS = [
     "id": "jellyfish",
     "theme": "sea",
     "he": {
-      "q": "איזו חיה שקופה בים עוקצת את המתרחצים בקיץ?",
+      "q": "איזה יצור ימי שקוף וצורב גורם לנו לחשוב פעמיים לפני שנכנסים למים בחודש יולי?",
       "a": "מדוזה"
     },
     "en": {
-      "q": "Which see-through sea creature stings the swimmers in the summer?",
+      "q": "Which see-through, stinging sea creature makes us think twice before getting into the water in July?",
       "a": "Jellyfish"
     }
   },
@@ -116,11 +116,11 @@ export const QUESTIONS = [
     "id": "octopus",
     "theme": "sea",
     "he": {
-      "q": "לאיזו חיה בים יש שמונה זרועות?",
+      "q": "איזו חיית ים חכמה מצוידת בשמונה זרועות ארוכות וביכולת להשפריץ קו של דיו שחור כדי לברוח?",
       "a": "תמנון"
     },
     "en": {
-      "q": "Which sea animal has eight arms?",
+      "q": "Which clever sea animal comes equipped with eight long arms and the ability to squirt black ink to escape?",
       "a": "Octopus"
     }
   },
@@ -128,11 +128,11 @@ export const QUESTIONS = [
     "id": "crab",
     "theme": "sea",
     "he": {
-      "q": "איזו חיה קטנה בחוף הולכת הצידה ויש לה צבתות?",
+      "q": "איזה בעל חיים קטן שמתחבא בין סלעי החוף מוכר בזכות שתי צבתות בולטות והליכה הצידה?",
       "a": "סרטן"
     },
     "en": {
-      "q": "Which little beach animal walks sideways and has two claws?",
+      "q": "Which little animal that hides between the beach rocks is known for its two big claws and its sideways walk?",
       "a": "Crab"
     }
   },
@@ -140,11 +140,11 @@ export const QUESTIONS = [
     "id": "shark",
     "theme": "sea",
     "he": {
-      "q": "איזה דג גדול ומפחיד שוחה בים עם סנפיר משולש והמון שיניים חדות?",
+      "q": "איזה דג טורף ומפחיד מזוהה בעזרת סנפיר הגב המשולש שלו שמציץ מעל המים?",
       "a": "כריש"
     },
     "en": {
-      "q": "Which big scary fish swims in the sea with a triangular fin and lots of sharp teeth?",
+      "q": "Which scary predator fish is recognized by its triangular back fin peeking above the water?",
       "a": "Shark"
     }
   },
@@ -152,11 +152,11 @@ export const QUESTIONS = [
     "id": "boat",
     "theme": "sea",
     "he": {
-      "q": "איך קוראים לכלי הקטן ששטים בו על המים וחותרים עם משוטים?",
+      "q": "איך קוראים לכלי שיט קטן שאפשר להשיט לאורך החוף בעזרת זוג משוטים או מנוע קטן?",
       "a": "סירה"
     },
     "en": {
-      "q": "What do you call the small thing you float on the water in and row with oars?",
+      "q": "What do you call a small vessel you can take along the shore using a pair of oars or a small motor?",
       "a": "Boat"
     }
   },
@@ -164,11 +164,11 @@ export const QUESTIONS = [
     "id": "sun",
     "theme": "sun",
     "he": {
-      "q": "מה הכדור הצהוב הגדול שמאיר ומחמם אותנו ביום?",
+      "q": "מהו כדור האש הענק בשמיים שמפיק אור וחום, ומחמם את כדור הארץ ביום?",
       "a": "שמש"
     },
     "en": {
-      "q": "What is the big yellow ball that lights us up and warms us during the day?",
+      "q": "What is the giant ball of fire in the sky that gives off light and heat, and warms the Earth during the day?",
       "a": "Sun"
     }
   },
@@ -176,11 +176,11 @@ export const QUESTIONS = [
     "id": "sunscreen",
     "theme": "sun",
     "he": {
-      "q": "מה מורחים על העור בחוף כדי לא להישרף?",
+      "q": "איזה תכשיר לבן חובה למרוח על העור לפני שיוצאים לים או לבריכה, כדי שלא נישרף ונתקלף אחר כך?",
       "a": "קרם הגנה"
     },
     "en": {
-      "q": "What do you rub on your skin at the beach so you don't get burned?",
+      "q": "Which white cream must you rub on your skin before going to the sea or the pool, so you don't get burned and peel afterwards?",
       "a": "Sunscreen"
     }
   },
@@ -188,11 +188,11 @@ export const QUESTIONS = [
     "id": "hat",
     "theme": "sun",
     "he": {
-      "q": "מה שמים על הראש כדי להגן עליו מהשמש?",
+      "q": "מה אנחנו חובשים על הראש כשאנחנו יוצאים לשמש כדי לא לקבל מכת חום?",
       "a": "כובע"
     },
     "en": {
-      "q": "What do you put on your head to protect it from the sun?",
+      "q": "What do we wear on our heads when we go out in the sun so we don't get heatstroke?",
       "a": "Hat"
     }
   },
@@ -200,11 +200,11 @@ export const QUESTIONS = [
     "id": "shade",
     "theme": "sun",
     "he": {
-      "q": "איך קוראים למקום הקריר והכהה שמתחת לעץ ביום חם?",
+      "q": "איך נקרא האזור הכהה והקריר יותר שנוצר כששמשייה, בניין או עץ גדול חוסמים את קרני השמש?",
       "a": "צל"
     },
     "en": {
-      "q": "What do you call the cool dark spot under a tree on a hot day?",
+      "q": "What do you call the darker, cooler area created when a parasol, a building or a big tree blocks the sun's rays?",
       "a": "Shade"
     }
   },
@@ -212,11 +212,11 @@ export const QUESTIONS = [
     "id": "sweat",
     "theme": "sun",
     "he": {
-      "q": "איך קוראים לטיפות המלוחות שנוזלות על העור כשחם מאוד?",
+      "q": "מה הגוף שלנו מפריש ומוציא דרך העור כדי להתקרר כשאנחנו עובדים קשה או כשמאוד חם בחוץ?",
       "a": "זיעה"
     },
     "en": {
-      "q": "What do you call the salty drops that run down your skin when it's very hot?",
+      "q": "What does our body release through the skin to cool down when we work hard or when it's very hot outside?",
       "a": "Sweat"
     }
   },
@@ -224,11 +224,11 @@ export const QUESTIONS = [
     "id": "sky",
     "theme": "sun",
     "he": {
-      "q": "איך קוראים לכחול הענק שמעל הראש שלנו?",
+      "q": "איך נקרא המרחב הכחול והפתוח שנמצא מעל הראש שלנו כשאנחנו יוצאים החוצה ביום בהיר?",
       "a": "שמיים"
     },
     "en": {
-      "q": "What do you call the huge blue thing above our heads?",
+      "q": "What do you call the big blue open space above our heads when we step outside on a clear day?",
       "a": "Sky"
     }
   },
@@ -236,11 +236,11 @@ export const QUESTIONS = [
     "id": "air-conditioner",
     "theme": "sun",
     "he": {
-      "q": "איזה מכשיר תלוי גבוה על הקיר בבית ומקרר את כל החדר?",
+      "q": "איזה מכשיר הוא החבר הכי טוב שלנו ביולי-אוגוסט, כשהוא שואב את הלחות ומזרים אוויר קר לחדר?",
       "a": "מזגן"
     },
     "en": {
-      "q": "Which machine hangs high on the wall at home and cools the whole room?",
+      "q": "Which machine is our best friend in July and August, sucking out the humidity and blowing cold air into the room?",
       "a": "Air conditioner"
     }
   },
@@ -248,11 +248,11 @@ export const QUESTIONS = [
     "id": "fan",
     "theme": "sun",
     "he": {
-      "q": "איזה מכשיר מסתובב ומנשב עלינו אוויר כשחם?",
+      "q": "איזה מכשיר נועד ליצור עבורנו בריזה נעימה בחדר רק בעזרת כנפיים מסתובבות?",
       "a": "מאוורר"
     },
     "en": {
-      "q": "Which machine spins around and blows air at us when it's hot?",
+      "q": "Which machine is made to give us a pleasant breeze in the room using nothing but spinning blades?",
       "a": "Fan"
     }
   },
@@ -260,11 +260,11 @@ export const QUESTIONS = [
     "id": "ice-cubes",
     "theme": "sun",
     "he": {
-      "q": "מה שמים בתוך הכוס כדי שהמשקה יהיה קר?",
+      "q": "איך קוראים לקוביות המוצקות של מים קפואים שאנחנו זורקים לתוך כוס השתייה כדי לצנן אותה?",
       "a": "קרח"
     },
     "en": {
-      "q": "What do you put in a glass to make the drink cold?",
+      "q": "What do you call the solid little blocks of frozen water we drop into a drink to cool it down?",
       "a": "Ice cubes"
     }
   },
@@ -272,11 +272,11 @@ export const QUESTIONS = [
     "id": "wind",
     "theme": "sun",
     "he": {
-      "q": "איך קוראים לאוויר שנושב בחוץ ומזיז את העלים בעצים?",
+      "q": "כשפותחים חלונות בבית בערב קיצי כדי שייכנס אוויר, אנחנו מקווים שתהיה קצת...?",
       "a": "רוח"
     },
     "en": {
-      "q": "What do you call the air that blows outside and moves the leaves on the trees?",
+      "q": "When we open the windows on a summer evening to let some air in, we're hoping for a bit of...?",
       "a": "Wind"
     }
   },
@@ -284,11 +284,11 @@ export const QUESTIONS = [
     "id": "watermelon",
     "theme": "food",
     "he": {
-      "q": "איזה פרי קיץ ירוק מבחוץ, אדום מבפנים ומלא גרעינים שחורים?",
+      "q": "איזה פרי קיצי גדול ומתוק, בעל קליפה ירוקה בחוץ, חותכים למשולשים אדומים עם גרעינים שחורים?",
       "a": "אבטיח"
     },
     "en": {
-      "q": "Which summer fruit is green outside, red inside, and full of black seeds?",
+      "q": "Which big sweet summer fruit with a green rind gets cut into red triangles with black seeds?",
       "a": "Watermelon"
     }
   },
@@ -296,11 +296,11 @@ export const QUESTIONS = [
     "id": "melon",
     "theme": "food",
     "he": {
-      "q": "איזה פרי קיץ עגול, ירקרק מבחוץ וכתום ומתוק מבפנים?",
+      "q": "איזה פרי עסיסי ומתוק מזוהה לרוב עם קליפה מחוספסת דמוית רשת ובפנים הוא כתום או ירקרק?",
       "a": "מלון"
     },
     "en": {
-      "q": "Which round summer fruit is greenish outside and orange and sweet inside?",
+      "q": "Which juicy sweet fruit usually has a rough net-like rind and is orange or greenish inside?",
       "a": "Melon"
     }
   },
@@ -308,11 +308,11 @@ export const QUESTIONS = [
     "id": "mango",
     "theme": "food",
     "he": {
-      "q": "איזה פרי קיץ כתום ומתוק גדל על עץ ויש לו גלעין גדול ושטוח?",
+      "q": "לאיזה פרי קיץ טרופי ומתוק יש זן בשם 'מאיה', וגלעין אחד גדול שקשה לחתוך סביבו?",
       "a": "מנגו"
     },
     "en": {
-      "q": "Which sweet orange summer fruit grows on a tree and has one big flat pit?",
+      "q": "Which sweet tropical summer fruit has a variety called 'Maya' and one big pit that's hard to cut around?",
       "a": "Mango"
     }
   },
@@ -320,11 +320,11 @@ export const QUESTIONS = [
     "id": "grapes",
     "theme": "food",
     "he": {
-      "q": "איזה פרי קיץ קטן ועגול גדל באשכולות על הגפן?",
+      "q": "אילו פירות קטנים גדלים על אשכולות בגפן, ואם מייבשים אותם בשמש הם הופכים לצימוקים?",
       "a": "ענבים"
     },
     "en": {
-      "q": "Which small round summer fruit grows in bunches on a vine?",
+      "q": "Which small fruits grow in bunches on a vine, and turn into raisins if you dry them in the sun?",
       "a": "Grapes"
     }
   },
@@ -332,11 +332,11 @@ export const QUESTIONS = [
     "id": "corn",
     "theme": "food",
     "he": {
-      "q": "איזה ירק צהוב על קלח מוכרים חם בחוף הים?",
+      "q": "איזה גידול חקלאי מורכב מגרעינים צהובים המסודרים על קלח, והופך לפופקורן כשמחממים אותו?",
       "a": "תירס"
     },
     "en": {
-      "q": "Which yellow vegetable on a cob is sold hot at the beach?",
+      "q": "Which crop is made of yellow kernels arranged on a cob, and turns into popcorn when you heat it?",
       "a": "Corn"
     }
   },
@@ -344,11 +344,11 @@ export const QUESTIONS = [
     "id": "ice-cream",
     "theme": "food",
     "he": {
-      "q": "איזה קינוח קר ומתוק מלקקים מגביע ביום חם?",
+      "q": "איזה קינוח קפוא וקרמי נמכר בכדורים, ואנחנו הכי אוהבים לאכול אותו מתוך גביע וופל קריספי?",
       "a": "גלידה"
     },
     "en": {
-      "q": "Which cold sweet treat do you lick out of a cone on a hot day?",
+      "q": "Which frozen creamy dessert is sold in scoops, and is best eaten out of a crispy waffle cone?",
       "a": "Ice cream"
     }
   },
@@ -356,11 +356,11 @@ export const QUESTIONS = [
     "id": "popsicle",
     "theme": "food",
     "he": {
-      "q": "איזה ממתק קפוא ממיץ אוכלים על מקל בקיץ?",
+      "q": "איזה קינוח קפוא ומתוק על מקל אנחנו קונים בקיוסק בים, ויכול להיות עשוי מקרח בטעמים או מגלידה?",
       "a": "ארטיק"
     },
     "en": {
-      "q": "Which frozen juice treat do you eat off a stick in the summer?",
+      "q": "Which frozen sweet treat on a stick do we buy at the beach kiosk, made of flavored ice or of ice cream?",
       "a": "Popsicle"
     }
   },
@@ -368,11 +368,11 @@ export const QUESTIONS = [
     "id": "slushy",
     "theme": "food",
     "he": {
-      "q": "איך קוראים למשקה הקפוא שנראה כמו שלג צבעוני ושותים אותו בקשית?",
+      "q": "איזה משקה קיצי וקפוא מורכב מקרח מרוסק דק דק, ומוגש בכוס פלסטיק עם קש עבה?",
       "a": "ברד"
     },
     "en": {
-      "q": "What do you call the frozen drink that looks like colored snow and is sipped through a straw?",
+      "q": "Which icy summer drink is made of finely crushed ice and served in a plastic cup with a thick straw?",
       "a": "Slushy"
     }
   },
@@ -380,11 +380,11 @@ export const QUESTIONS = [
     "id": "lemonade",
     "theme": "food",
     "he": {
-      "q": "איזה משקה קר מכינים מלימונים, מים וסוכר?",
+      "q": "איזה משקה מתוק-חמוץ וקלאסי לימי הקיץ מכינים ממים, קרח, סוכר ומיץ סחוט טרי?",
       "a": "לימונדה"
     },
     "en": {
-      "q": "Which cold drink is made from lemons, water and sugar?",
+      "q": "Which classic sweet-and-sour summer drink is made of water, ice, sugar and freshly squeezed juice?",
       "a": "Lemonade"
     }
   },
@@ -392,11 +392,11 @@ export const QUESTIONS = [
     "id": "water",
     "theme": "food",
     "he": {
-      "q": "מה הכי חשוב לשתות הרבה ביום חם מאוד?",
+      "q": "מהו הנוזל השקוף והבסיסי ביותר, שבלעדיו אי אפשר לחיות, ואותו הכי חשוב לשתות כשחם בחוץ?",
       "a": "מים"
     },
     "en": {
-      "q": "What is the most important thing to drink a lot of on a boiling hot day?",
+      "q": "What is the most basic clear liquid, the one we can't live without, and the most important thing to drink when it's hot outside?",
       "a": "Water"
     }
   },
@@ -404,11 +404,11 @@ export const QUESTIONS = [
     "id": "pool",
     "theme": "fun",
     "he": {
-      "q": "לאן הולכים לשחות בקיץ כשלא הולכים לים?",
+      "q": "איך קוראים למקום הגדול עם המים והכלור שכולם הולכים לשחות בו בקיץ כשלא בא לנסוע לים?",
       "a": "בריכה"
     },
     "en": {
-      "q": "Where do you go swimming in the summer when you don't go to the sea?",
+      "q": "What do you call the big place with water and chlorine where everyone goes swimming in the summer when they don't feel like driving to the sea?",
       "a": "Pool"
     }
   },
@@ -416,11 +416,11 @@ export const QUESTIONS = [
     "id": "summer-camp",
     "theme": "fun",
     "he": {
-      "q": "לאן שולחים ילדים בקיץ כדי לשחק ולעשות פעילויות עם מדריכים כל היום?",
+      "q": "לאיזו מסגרת יומית הורים שולחים את הילדים בקיץ כדי שייהנו ממשחקים עם מדריכים, ובעיקר כדי לקבל מהם קצת שקט?",
       "a": "קייטנה"
     },
     "en": {
-      "q": "Where do kids go in the summer to play and do activities with counselors all day?",
+      "q": "Which daytime program do parents send the kids to in the summer so they can enjoy games with counselors — and mostly so the parents get some quiet?",
       "a": "Summer camp"
     }
   },
@@ -428,11 +428,11 @@ export const QUESTIONS = [
     "id": "summer-vacation",
     "theme": "fun",
     "he": {
-      "q": "איך קוראים לתקופה הארוכה בקיץ שבה אין בית ספר?",
+      "q": "איך קוראים לתקופה המסורתית שמתחילה בסוף יוני, שבה בתי הספר סגורים ואין לימודים?",
       "a": "חופש גדול"
     },
     "en": {
-      "q": "What do you call the long break in the summer when there is no school?",
+      "q": "What do you call the traditional period starting at the end of June, when the schools are closed and there are no lessons?",
       "a": "Summer vacation"
     }
   },
@@ -440,11 +440,11 @@ export const QUESTIONS = [
     "id": "bicycle",
     "theme": "fun",
     "he": {
-      "q": "על מה רוכבים בשכונה בחופש, כשיש שני גלגלים ודוושות?",
+      "q": "איזה כלי תחבורה מבוסס על שיווי משקל של הרוכב, ומתקדם קדימה רק בעזרת סיבוב פדלים?",
       "a": "אופניים"
     },
     "en": {
-      "q": "What do you ride around the neighborhood on vacation that has two wheels and pedals?",
+      "q": "Which vehicle relies on the rider's balance and moves forward only by turning the pedals?",
       "a": "Bicycle"
     }
   },
@@ -452,11 +452,11 @@ export const QUESTIONS = [
     "id": "flip-flops",
     "theme": "fun",
     "he": {
-      "q": "מה נועלים בקיץ, עם רצועה שנכנסת בין אצבעות הרגל?",
+      "q": "אילו נעלי קיץ פתוחות אנחנו נועלים בדרך לים או לבריכה, ויש להן רק רצועה אחת שמפרידה בין האצבעות?",
       "a": "כפכפים"
     },
     "en": {
-      "q": "Which summer footwear has a strap that goes between your toes?",
+      "q": "Which open summer shoes do we wear on the way to the sea or the pool, with just one strap that goes between the toes?",
       "a": "Flip-flops"
     }
   },
@@ -464,11 +464,11 @@ export const QUESTIONS = [
     "id": "kite",
     "theme": "fun",
     "he": {
-      "q": "מה מעיפים גבוה באוויר ומחזיקים בחוט?",
+      "q": "איזה חפץ בנוי ממסגרת קלה ומפרש צבעוני, וכל הכיף זה לשחרר לו חוט ולראות אותו ממריא ברוח?",
       "a": "עפיפון"
     },
     "en": {
-      "q": "What do you fly high up in the air while holding a string?",
+      "q": "Which object is built from a light frame and a colorful sail, and the whole fun is letting out its string and watching it soar in the wind?",
       "a": "Kite"
     }
   },
@@ -476,11 +476,11 @@ export const QUESTIONS = [
     "id": "sprinkler",
     "theme": "fun",
     "he": {
-      "q": "איזה מכשיר בגינה מסתובב ומתיז מים על הדשא?",
+      "q": "איזה מתקן מסתובב בגינה, מחובר לצינור ומשפריץ מים כדי להשקות את הדשא?",
       "a": "ממטרה"
     },
     "en": {
-      "q": "Which garden gadget spins around and sprays water on the grass?",
+      "q": "Which spinning gadget in the garden is hooked to a hose and sprays water to keep the grass watered?",
       "a": "Sprinkler"
     }
   },
@@ -488,11 +488,11 @@ export const QUESTIONS = [
     "id": "tent",
     "theme": "fun",
     "he": {
-      "q": "איך קוראים לבית הקטן מבד שמקימים בקמפינג וישנים בתוכו?",
+      "q": "איזה מבנה ארעי מבד ומקלות אנחנו מקימים כשיוצאים לקמפינג ורוצים לישון בטבע?",
       "a": "אוהל"
     },
     "en": {
-      "q": "What do you call the little cloth house you put up when camping and sleep inside?",
+      "q": "Which temporary structure of cloth and poles do we put up when we go camping and want to sleep out in nature?",
       "a": "Tent"
     }
   },
@@ -500,11 +500,11 @@ export const QUESTIONS = [
     "id": "campfire",
     "theme": "fun",
     "he": {
-      "q": "איך קוראים לאש הגדולה שמדליקים מענפים בערב ויושבים סביבה?",
+      "q": "מה מדליקים מקרשים וענפים בל\"ג בעומר או בערב בשטח, ויושבים מסביבה לשיר ולאפות תפוחי אדמה?",
       "a": "מדורה"
     },
     "en": {
-      "q": "What do you call the big fire you light from branches in the evening and sit around?",
+      "q": "What do you light from planks and branches on Lag BaOmer or on an evening outdoors, sitting around it to sing and bake potatoes?",
       "a": "Campfire"
     }
   },
@@ -512,11 +512,11 @@ export const QUESTIONS = [
     "id": "stars",
     "theme": "fun",
     "he": {
-      "q": "אילו נקודות קטנות מנצנצות מעל הראש בלילות הקיץ?",
+      "q": "אילו נקודות אור קטנות ומנצנצות אפשר לראות בשמיים כשמסתכלים למעלה בלילה?",
       "a": "כוכבים"
     },
     "en": {
-      "q": "Which tiny dots twinkle above our heads on summer nights?",
+      "q": "Which tiny twinkling points of light can you see in the sky when you look up at night?",
       "a": "Stars"
     }
   },
@@ -524,11 +524,11 @@ export const QUESTIONS = [
     "id": "mosquito",
     "theme": "nature",
     "he": {
-      "q": "איזה חרק קטן מזמזם לך באוזן בלילה ומשאיר עקיצה שמגרדת?",
+      "q": "איזה מעופף קטן וטורדני לא נותן לנו לישון בלילות הקיץ ומשאיר אותנו עם עקיצות מגרדות?",
       "a": "יתוש"
     },
     "en": {
-      "q": "Which tiny insect buzzes in your ear at night and leaves an itchy bite?",
+      "q": "Which small annoying flyer keeps us from sleeping on summer nights and leaves us with itchy bites?",
       "a": "Mosquito"
     }
   },
@@ -536,11 +536,11 @@ export const QUESTIONS = [
     "id": "cricket",
     "theme": "nature",
     "he": {
-      "q": "איזה חרק קטן עושה 'צר צר צר' בחצר בערב?",
+      "q": "איזה חרק מתחבא בשיחים בשעות הערב ומפיק קול ניסור קצבי שמלווה את לילות הקיץ?",
       "a": "צרצר"
     },
     "en": {
-      "q": "Which little insect goes 'chirp chirp chirp' in the yard in the evening?",
+      "q": "Which insect hides in the bushes in the evening and makes the rhythmic sawing sound that accompanies summer nights?",
       "a": "Cricket"
     }
   },
@@ -548,11 +548,11 @@ export const QUESTIONS = [
     "id": "butterfly",
     "theme": "nature",
     "he": {
-      "q": "איזה חרק צבעוני עם כנפיים גדולות מתעופף בין הפרחים?",
+      "q": "איזה יצור צבעוני ומרשים מתעופף בין פרחים, לאחר שעבר גלגול מצורה של זחל?",
       "a": "פרפר"
     },
     "en": {
-      "q": "Which colorful insect with big wings flutters between the flowers?",
+      "q": "Which colorful, impressive creature flutters between the flowers after transforming from a caterpillar?",
       "a": "Butterfly"
     }
   },
@@ -560,11 +560,11 @@ export const QUESTIONS = [
     "id": "sunflower",
     "theme": "nature",
     "he": {
-      "q": "איזה פרח צהוב וענק גדל גבוה בשדה, ובתוכו גרעינים?",
+      "q": "איזה פרח צהוב וענק מגיע לגובה רב, וממנו אנחנו מקבלים את הגרעינים השחורים שאנחנו מפצחים?",
       "a": "חמנייה"
     },
     "en": {
-      "q": "Which giant yellow flower grows tall in the field with seeds inside it?",
+      "q": "Which giant yellow flower grows very tall, and gives us the black seeds we love cracking open?",
       "a": "Sunflower"
     }
   }

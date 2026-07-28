@@ -11,5 +11,8 @@
     "start": "node --env-file-if-exists=server/.env server/server.js",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client && npm run dev"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^25.4.0"
   }
 }
